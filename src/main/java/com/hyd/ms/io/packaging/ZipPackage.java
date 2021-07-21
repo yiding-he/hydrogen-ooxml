@@ -3,19 +3,15 @@ package com.hyd.ms.io.packaging;
 import com.hyd.assertion.Assert;
 import com.hyd.ms.io.FileAccess;
 import com.hyd.ms.io.FileMode;
-import com.hyd.ms.io.IoException;
+import com.hyd.ms.io.FileStream;
+import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.compression.ZipArchive;
 import com.hyd.xml.Xml;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,19 +20,9 @@ import java.util.Map;
  */
 public class ZipPackage extends Package {
 
-    private static InputStream newFileInputStream(String path) {
-        try {
-            Path nioPath = Paths.get(path);
-            if (!Files.exists(nioPath)) {
-                Files.createFile(nioPath);
-            }
-            return Files.newInputStream(nioPath);
-        } catch (IOException e) {
-            throw new IoException(e);
-        }
-    }
+    private final FileMode packageFileMode;
 
-    //////////////////////////
+    private Stream stream;
 
     private ZipArchive zipArchive;
 
@@ -54,35 +40,47 @@ public class ZipPackage extends Package {
      * @param packageFileAccess intended to be used in {@link ZipArchive}
      */
     public ZipPackage(String path, FileMode packageFileMode, FileAccess packageFileAccess) {
-        this(newFileInputStream(path), packageFileMode, packageFileAccess);
+        this(new FileStream(path), packageFileMode, packageFileAccess);
     }
 
     /**
      * Constructor
      *
-     * @param is                content stream
      * @param packageFileMode   intended to be used in FileStream
      * @param packageFileAccess intended to be used in {@link ZipArchive}
      */
-    public ZipPackage(InputStream is, FileMode packageFileMode, FileAccess packageFileAccess) {
+    public ZipPackage(Stream stream, FileMode packageFileMode, FileAccess packageFileAccess) {
         super(packageFileAccess);
         Assert.that(packageFileMode.isAvailable(), "mode '%s' is not available for now", packageFileMode);
 
-        this.zipArchive = new ZipArchive(is);
-        this.contentTypeHelper = new ContentTypeHelper(zipArchive, packageFileMode, packageFileAccess);
+        if (packageFileMode == FileMode.Open && stream.length() == 0) {
+            throw new ZipPackageException("Not a valid archive");
+        } else if (packageFileMode == FileMode.CreateNew && stream.length() != 0) {
+            throw new ZipPackageException("Stream not empty");
+        } else if (packageFileMode == FileMode.Create && stream.length() != 0) {
+            stream.setLength(0);
+        }
+
+        if (stream.length() != 0) {
+            this.zipArchive = new ZipArchive(stream.read());
+        } else {
+            this.zipArchive = new ZipArchive();
+        }
+
+        this.packageFileMode = packageFileMode;
+        this.stream = stream;
+        this.contentTypeHelper = new ContentTypeHelper(this.zipArchive, packageFileMode, packageFileAccess);
     }
 
     /////////////////////////////////////////////////////////////////// methods
 
-    public void write(OutputStream os) {
-        this.contentTypeHelper.saveToFile();
-        this.zipArchive.write(os);
-    }
-
     @Override
     public void close() throws IOException {
-        this.contentTypeHelper.saveToFile();
-        this.zipArchive.dispose();
+        if (this.packageFileMode != FileMode.Open) {
+            this.contentTypeHelper.saveToFile();
+            this.zipArchive.write(this.stream.write());
+            this.stream.close();
+        }
     }
 
     @Override

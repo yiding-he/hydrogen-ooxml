@@ -5,8 +5,6 @@ import com.hyd.ms.io.FileMode;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,13 +22,6 @@ class ZipPackageTest {
     }
 
     @Test
-    public void testCreateAndSave() throws Exception {
-        String filePath = "target/" + System.currentTimeMillis() + ".zip";
-        ZipPackage zipPackage = new ZipPackage(filePath);
-        zipPackage.write(Files.newOutputStream(Paths.get(filePath)));
-    }
-
-    @Test
     public void testCreateEmpty() throws Exception {
         String filePath = "target/" + System.currentTimeMillis() + ".zip";
 
@@ -39,5 +30,11 @@ class ZipPackageTest {
 
         assertTrue(new File(filePath).exists());
         assertTrue(new File(filePath).length() > 0, "Archive should not be empty");
+    }
+
+    @Test
+    public void testOpenFile() throws Exception {
+        ZipPackage zipPackage = new ZipPackage("target/1.zip");
+        zipPackage.close();
     }
 }

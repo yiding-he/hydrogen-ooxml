@@ -6,7 +6,6 @@ import com.hyd.ms.io.FileMode;
 import com.hyd.ms.io.FileShare;
 
 import java.io.Closeable;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.TreeMap;
 
@@ -14,10 +13,6 @@ public abstract class Package implements Closeable {
 
     public static Package open(String path, FileMode packageMode, FileAccess packageAccess, FileShare packageShare) {
         return new ZipPackage(path, packageMode, packageAccess);
-    }
-
-    public static Package open(InputStream is, FileMode packageMode, FileAccess packageAccess) {
-        return new ZipPackage(is, packageMode, packageAccess);
     }
 
     /////////////////////////////////////////////////////////////////// members
