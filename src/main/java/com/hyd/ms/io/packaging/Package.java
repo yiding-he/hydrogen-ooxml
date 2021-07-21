@@ -13,7 +13,7 @@ import java.util.TreeMap;
 public abstract class Package implements Closeable {
 
     public static Package open(String path, FileMode packageMode, FileAccess packageAccess, FileShare packageShare) {
-        return new ZipPackage(path, packageMode, packageAccess, packageShare);
+        return new ZipPackage(path, packageMode, packageAccess);
     }
 
     public static Package open(InputStream is, FileMode packageMode, FileAccess packageAccess) {
@@ -113,6 +113,14 @@ public abstract class Package implements Closeable {
         }
     }
 
+    public void flush() {
+        // TODO implement these:
+        // flushRelationships();
+        // doOperationOnEachPart(this::doWriteRelationshipsXml);
+        // doOperationOnEachPart(this::doFlush);
+        flushCore();
+    }
+
     /////////////////////////////////////////////////////////////////// private methods
 
     private void addIfNoPrefixCollisionDetected(
@@ -156,4 +164,10 @@ public abstract class Package implements Closeable {
     protected abstract void deletePartCore(URI partUri);
 
     protected abstract PackagePart[] getPartsCore();
+
+    /**
+     * This method is for custom implementation corresponding to the underlying file format.
+     * This method flushes the contents of the package to the disc.
+     */
+    protected abstract void flushCore();
 }

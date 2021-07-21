@@ -32,4 +32,8 @@ public abstract class PackagePart {
     public boolean isDeleted() {
         return deleted;
     }
+
+    /////////////////////////////////////////////////////////////////// abstract methods
+
+
 }

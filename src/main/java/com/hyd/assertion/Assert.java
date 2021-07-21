@@ -1,5 +1,7 @@
 package com.hyd.assertion;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class Assert {
@@ -12,20 +14,21 @@ public class Assert {
 
     public static void notBlank(String s, String name) {
         if (isBlank(s)) {
-            throw new IllegalArgumentException(name + " is blank string");
+            throw new IllegalArgumentException(name + " is null or blank string");
         }
     }
 
     ///////////////////////////////////////////////////////////////////
 
-    public static void that(boolean assertion, String message) {
+    public static void that(boolean assertion, String message, Object... messageParams) {
         if (!assertion) {
-            throw new AssertException(message);
+            String finalMessage = ArrayUtils.isEmpty(messageParams) ? message : String.format(message, messageParams);
+            throw new AssertException(finalMessage);
         }
     }
 
-    public static void not(boolean assertion, String message) {
-        that(!assertion, message);
+    public static void not(boolean assertion, String message, Object... messageParams) {
+        that(!assertion, message, messageParams);
     }
 
     public static void isNCName(String s, String name) {
