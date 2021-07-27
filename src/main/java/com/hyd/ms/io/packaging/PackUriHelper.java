@@ -43,6 +43,10 @@ public class PackUriHelper {
         return validatePartUri(partUri).isRelationshipPartUri();
     }
 
+    public static boolean isRelationshipPartUri(ValidatedPartUri validatedPartUri) {
+        return isRelationshipPartUri(validatedPartUri.getUri());
+    }
+
     public static ValidatedPartUri validatePartUri(URI partUri) {
         if (partUri == null) {
             throw new IllegalArgumentException("partUri is null");

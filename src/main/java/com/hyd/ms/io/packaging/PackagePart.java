@@ -1,7 +1,5 @@
 package com.hyd.ms.io.packaging;
 
-import java.net.URI;
-
 public abstract class PackagePart {
 
     private final PackUriHelper.ValidatedPartUri uri;
@@ -12,13 +10,16 @@ public abstract class PackagePart {
 
     private final boolean relationshipPart;
 
+    private final ContentType contentType;
+
     private boolean deleted;
 
-    protected PackagePart(Package container, URI partUri) {
-        this.uri = PackUriHelper.validatePartUri(partUri);
+    protected PackagePart(Package container, PackUriHelper.ValidatedPartUri uri, String contentType) {
+        this.uri = uri;
         this.container = container;
         this.relationships = new InternalRelationshipCollection(container, this);
-        this.relationshipPart = PackUriHelper.isRelationshipPartUri(partUri);
+        this.relationshipPart = PackUriHelper.isRelationshipPartUri(uri);
+        this.contentType = contentType == null ? null : new ContentType(contentType);
     }
 
     public PackUriHelper.ValidatedPartUri getUri() {

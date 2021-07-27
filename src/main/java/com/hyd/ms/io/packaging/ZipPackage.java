@@ -6,6 +6,7 @@ import com.hyd.ms.io.FileMode;
 import com.hyd.ms.io.FileStream;
 import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.compression.ZipArchive;
+import com.hyd.ms.io.compression.ZipArchiveEntry;
 import com.hyd.xml.Xml;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -85,8 +86,17 @@ public class ZipPackage extends Package {
 
     @Override
     protected PackagePart createPartCore(
-        URI partUri, String contentType, CompressionOption compressionOption) {
-        return null;
+        URI partUri, String contentType, CompressionOption compressionOption
+    ) {
+        Assert.notBlank(contentType, "ContentType is empty");
+        PackUriHelper.ValidatedPartUri validatedPartUri = PackUriHelper.validatePartUri(partUri);
+
+        // We need to remove the leading "/" character at the beginning of the part name.
+        String zipItemName = validatedPartUri.getUri().toString().substring(1);
+        ZipArchiveEntry zipArchiveEntry = this.zipArchive.createEntry(zipItemName);
+
+        this.contentTypeHelper.addContentType(validatedPartUri, new ContentType(contentType));
+        return new ZipPackagePart(this, zipArchive, zipArchiveEntry, validatedPartUri, contentType);
     }
 
     @Override
