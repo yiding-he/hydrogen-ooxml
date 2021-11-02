@@ -1,8 +1,9 @@
 package com.hyd.ms.io.packaging;
 
-import com.hyd.assertion.Assert;
+import com.hyd.utilities.assertion.Assert;
 
 import java.net.URI;
+import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -39,6 +40,10 @@ public class InternalRelationshipCollection {
         this.uri = PackUriHelper.getRelationshipPartUri(
             part == null ? PackUriHelper.PACKAGE_ROOT_URI : sourcePart.getUri().getUri()
         );
+    }
+
+    public Iterator<PackageRelationship> getRelationshipIterator() {
+        return this.relationships.values().iterator();
     }
 
     public PackageRelationship add(

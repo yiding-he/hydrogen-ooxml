@@ -1,4 +1,4 @@
-package com.hyd.assertion;
+package com.hyd.utilities.assertion;
 
 public class AssertException extends RuntimeException {
 

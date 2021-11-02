@@ -1,7 +1,7 @@
 package com.hyd.ms.io.packaging;
 
-import com.hyd.assertion.AssertException;
 import com.hyd.ms.io.FileMode;
+import com.hyd.utilities.assertion.AssertException;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;

@@ -1,12 +1,12 @@
 package com.hyd.ms.io.packaging;
 
-import com.hyd.assertion.Assert;
 import com.hyd.ms.io.FileAccess;
 import com.hyd.ms.io.FileMode;
 import com.hyd.ms.io.FileStream;
 import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.compression.ZipArchive;
 import com.hyd.ms.io.compression.ZipArchiveEntry;
+import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.Xml;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -127,8 +127,11 @@ public class ZipPackage extends Package {
 
         public static final String ENTRY_NAME = "[Content_Types].xml";
 
+        // uri -> contentType
+        // TODO can be lazy initialized
         private final Map<PackUriHelper.ValidatedPartUri, ContentType> overrideDictionary = new HashMap<>();
 
+        // extension -> contentType
         private final Map<String, ContentType> defaultDictionary = new HashMap<>();
 
         private final ZipArchive zipArchive;
@@ -137,6 +140,8 @@ public class ZipPackage extends Package {
 
         private final FileAccess packageFileAccess;
 
+        private boolean dirty;
+
         ContentTypeHelper(ZipArchive zipArchive, FileMode packageFileMode, FileAccess packageFileAccess) {
             this.zipArchive = zipArchive;
             this.packageFileAccess = packageFileAccess;
@@ -144,6 +149,10 @@ public class ZipPackage extends Package {
         }
 
         public void saveToFile() {
+            if (!this.dirty) {
+                return;
+            }
+
             Document document = Xml.newDocument();
             document.setXmlStandalone(true);
 
@@ -166,6 +175,36 @@ public class ZipPackage extends Package {
 
             byte[] bytes = Xml.toBytes(document);
             zipArchive.createEntry(ENTRY_NAME).setContent(bytes);
+        }
+
+        public void addContentType(PackUriHelper.ValidatedPartUri validatedPartUri, ContentType contentType) {
+            String extension = validatedPartUri.partUriExtension();
+            if (extension.isEmpty()) {
+                addOverrideElement(validatedPartUri, contentType);
+            } else if (!defaultDictionary.containsKey(extension)) {
+                addDefaultElement(extension, contentType);
+            } else if (!defaultDictionary.get(extension).areTypeAndSubTypeEqual(contentType)) {
+                addOverrideElement(validatedPartUri, contentType);
+            } else if (!overrideDictionary.containsKey(validatedPartUri)) {
+                addOverrideElement(validatedPartUri, contentType);
+            }
+        }
+
+        public void deleteContentType(PackUriHelper.ValidatedPartUri validatedPartUri) {
+            if (this.overrideDictionary.remove(validatedPartUri) != null) {
+                this.dirty = true;
+            }
+        }
+
+        private void addDefaultElement(String extension, ContentType contentType) {
+            this.defaultDictionary.put(extension, contentType);
+            this.dirty = true;
+        }
+
+        private void addOverrideElement(PackUriHelper.ValidatedPartUri validatedPartUri, ContentType contentType) {
+            this.deleteContentType(validatedPartUri);
+            this.overrideDictionary.put(validatedPartUri, contentType);
+            this.dirty = true;
         }
     }
 }

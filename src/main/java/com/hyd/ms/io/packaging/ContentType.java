@@ -1,6 +1,6 @@
 package com.hyd.ms.io.packaging;
 
-import com.hyd.assertion.Assert;
+import com.hyd.utilities.assertion.Assert;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ public class ContentType {
 
     private String subType;
 
-    private final Map<String, String> parameterDictionary = new HashMap<>();
+    private Map<String, String> parameterDictionary;
 
     public ContentType(String contentTypeStr) {
         Assert.notNull(contentTypeStr, "contentTypeStr");
@@ -32,6 +32,7 @@ public class ContentType {
 
         parseTypeAndSubType(parts[0]);
         if (parts.length > 1) {
+            parameterDictionary = new HashMap<>();
             parseParameterAndValue(Arrays.copyOfRange(parts, 1, parts.length));
         }
     }
@@ -57,4 +58,18 @@ public class ContentType {
         this.type = split[0];
         this.subType = split[1];
     }
+
+    public boolean areTypeAndSubTypeEqual(ContentType other) {
+        // Return false if this content type object has parameters
+        if (parameterDictionary != null && !parameterDictionary.isEmpty()) {
+            return false;
+        }
+        // Return false if the content type object passed in has parameters
+        if (other.parameterDictionary != null && !other.parameterDictionary.isEmpty()) {
+            return false;
+        }
+
+        return this.type.equalsIgnoreCase(other.type) && this.subType.equalsIgnoreCase(other.subType);
+    }
+
 }

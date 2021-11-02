@@ -1,8 +1,9 @@
 package com.hyd.ms.io.packaging;
 
-import com.hyd.assertion.Assert;
 import com.hyd.ms.io.IoException;
+import com.hyd.utilities.assertion.Assert;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -122,6 +123,10 @@ public class PackUriHelper {
 
             return segments[segments.length - 2].equals("_rels") &&
                 !segments[segments.length - 3].equals("_rels");
+        }
+
+        public String partUriExtension() {
+            return StringUtils.defaultString(StringUtils.substringAfterLast(this.normalized, "."), "");
         }
     }
 }

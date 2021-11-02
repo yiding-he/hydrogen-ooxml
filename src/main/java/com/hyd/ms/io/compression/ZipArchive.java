@@ -1,7 +1,7 @@
 package com.hyd.ms.io.compression;
 
-import com.hyd.assertion.Assert;
 import com.hyd.ms.io.IoException;
+import com.hyd.utilities.assertion.Assert;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 

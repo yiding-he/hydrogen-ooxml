@@ -3,7 +3,6 @@ package com.hyd.ms.io.packaging;
 import lombok.Data;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.time.temporal.Temporal;
 
 @Data
@@ -41,13 +40,4 @@ public abstract class PackageProperties implements Closeable {
 
     private String version;
 
-    //////////////////////////
-
-    public static class Impl extends PackageProperties {
-
-        @Override
-        public void close() throws IOException {
-            // nothing to do
-        }
-    }
 }

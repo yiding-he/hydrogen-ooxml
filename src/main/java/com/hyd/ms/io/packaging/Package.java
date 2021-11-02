@@ -1,9 +1,9 @@
 package com.hyd.ms.io.packaging;
 
-import com.hyd.assertion.Assert;
 import com.hyd.ms.io.FileAccess;
 import com.hyd.ms.io.FileMode;
 import com.hyd.ms.io.FileShare;
+import com.hyd.utilities.assertion.Assert;
 
 import java.io.Closeable;
 import java.net.URI;
@@ -19,11 +19,13 @@ public abstract class Package implements Closeable {
 
     private final FileAccess fileAccess;
 
-    private final PackageProperties packageProperties = new PackageProperties.Impl();
+    private final PackageProperties packageProperties = new PartBasedPackageProperties(this);
 
     private final TreeMap<PackUriHelper.ValidatedPartUri, PackagePart> partList = new TreeMap<>();
 
     private final InternalRelationshipCollection relationships = new InternalRelationshipCollection(this, null);
+
+    private boolean disposed = false;
 
     /////////////////////////////////////////////////////////////////// constructors
 
@@ -39,6 +41,10 @@ public abstract class Package implements Closeable {
 
     public PackageProperties getPackageProperties() {
         return packageProperties;
+    }
+
+    public PackagePart createPart(URI partUri, String contentType) {
+        return createPart(partUri, contentType, CompressionOption.NotCompressed);
     }
 
     public PackagePart createPart(URI partUri, String contentType, CompressionOption compressionOption) {
@@ -75,6 +81,13 @@ public abstract class Package implements Closeable {
         return this.relationships.add(targetUri, targetMode, relationshipType, id);
     }
 
+    public PackageRelationshipCollection GetRelationshipsByType(String relationshipType) {
+        throwIfDisposed();
+        throwIfWriteOnly();
+        Assert.notBlank(relationshipType, "relationshipType");
+        return new PackageRelationshipCollection(relationships, relationshipType);
+    }
+
     public void deletePart(URI partUri) {
         Assert.notNull(partUri, "partUri");
 
@@ -109,11 +122,32 @@ public abstract class Package implements Closeable {
     }
 
     public void flush() {
+        throwIfDisposed();
+        throwIfReadOnly();
+
         // TODO implement these:
         // flushRelationships();
         // doOperationOnEachPart(this::doWriteRelationshipsXml);
         // doOperationOnEachPart(this::doFlush);
         flushCore();
+    }
+
+    private void throwIfReadOnly() {
+        if (this.fileAccess == FileAccess.Read) {
+            throw new IllegalStateException("Package is read only");
+        }
+    }
+
+    private void throwIfWriteOnly() {
+        if (this.fileAccess == FileAccess.Write) {
+            throw new IllegalStateException("Package is write only");
+        }
+    }
+
+    private void throwIfDisposed() {
+        if (this.disposed) {
+            throw new IllegalStateException("Package is closed");
+        }
     }
 
     /////////////////////////////////////////////////////////////////// private methods

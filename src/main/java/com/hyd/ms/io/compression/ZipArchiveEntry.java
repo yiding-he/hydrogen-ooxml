@@ -1,6 +1,6 @@
 package com.hyd.ms.io.compression;
 
-import com.hyd.assertion.Assert;
+import com.hyd.utilities.assertion.Assert;
 import org.apache.commons.lang3.StringUtils;
 
 public class ZipArchiveEntry {
