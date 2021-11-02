@@ -1,17 +1,20 @@
 package com.hyd.ms.io.compression;
 
+import com.hyd.ms.io.ByteArrayStream;
+import com.hyd.ms.io.Stream;
 import com.hyd.utilities.assertion.Assert;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public class ZipArchiveEntry {
+import java.io.IOException;
 
-    private final static byte[] EMPTY = new byte[0];
+public class ZipArchiveEntry {
 
     private final ZipArchive archive;
 
     private final String name;
 
-    private byte[] content;
+    private final ByteArrayStream content = new ByteArrayStream();
 
     private final boolean directory;
 
@@ -21,14 +24,14 @@ public class ZipArchiveEntry {
 
         this.archive = archive;
         this.name = name;
-        this.content = content;
         this.directory = false;
+
+        setContent(content);
     }
 
     public ZipArchiveEntry(ZipArchive archive, String name) {
         this.archive = archive;
         this.name = StringUtils.appendIfMissing(name, "/");
-        this.content = EMPTY;
         this.directory = true;
     }
 
@@ -45,10 +48,22 @@ public class ZipArchiveEntry {
     }
 
     public byte[] getContent() {
-        return content;
+        try {
+            return IOUtils.toByteArray(content.read(), content.length());
+        } catch (IOException e) {
+            throw new ZipException(e);
+        }
     }
 
     public void setContent(byte[] content) {
-        this.content = content;
+        try {
+            this.content.write().write(content);
+        } catch (IOException e) {
+            throw new ZipException(e);
+        }
+    }
+
+    public Stream getStream() {
+        return null;
     }
 }

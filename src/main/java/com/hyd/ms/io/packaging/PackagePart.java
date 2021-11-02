@@ -1,5 +1,7 @@
 package com.hyd.ms.io.packaging;
 
+import com.hyd.ms.io.Stream;
+
 public abstract class PackagePart {
 
     private final PackUriHelper.ValidatedPartUri uri;
@@ -34,7 +36,11 @@ public abstract class PackagePart {
         return deleted;
     }
 
+    public Stream getStream() {
+        return getStreamCore();
+    }
+
     /////////////////////////////////////////////////////////////////// abstract methods
 
-
+    protected abstract Stream getStreamCore();
 }

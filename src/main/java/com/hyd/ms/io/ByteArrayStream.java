@@ -1,15 +1,24 @@
 package com.hyd.ms.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class ByteArrayStream extends Stream {
 
-    // TODO implement this
+    private static class MyByteArrayOutputStream extends ByteArrayOutputStream {
+
+        public byte[] getBuf() {
+            return this.buf;
+        }
+    }
+
+    private final MyByteArrayOutputStream data = new MyByteArrayOutputStream();
 
     @Override
     public long length() {
-        return 0;
+        return this.data.size();
     }
 
     @Override
@@ -19,11 +28,11 @@ public class ByteArrayStream extends Stream {
 
     @Override
     public InputStream read() {
-        return null;
+        return new ByteArrayInputStream(this.data.getBuf());
     }
 
     @Override
     public OutputStream write() {
-        return null;
+        return this.data;
     }
 }
