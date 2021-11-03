@@ -17,6 +17,12 @@ public class PackUriHelper {
 
     public static final URI ROOT_RELATION_URI_OBJ = uri(ROOT_RELATION_URI);
 
+    public static final ValidatedPartUri ROOT_RELATION_VALIDATED_URI = validatePartUri(ROOT_RELATION_URI_OBJ);
+
+    public static final String RELATIONSHIP_PART_SEGMENT_NAME = "_rels";
+
+    public static final String RELATIONSHIP_PART_EXTENSION_NAME = ".rels";
+
     public static URI uri(String uriString) {
         try {
             return new URI(uriString);
@@ -48,6 +54,10 @@ public class PackUriHelper {
         return isRelationshipPartUri(validatedPartUri.getUri());
     }
 
+    public static ValidatedPartUri validatePartUri(String uri) {
+        return validatePartUri(uri(uri));
+    }
+
     public static ValidatedPartUri validatePartUri(URI partUri) {
         if (partUri == null) {
             throw new IllegalArgumentException("partUri is null");
@@ -69,6 +79,22 @@ public class PackUriHelper {
         }
 
         return new ValidatedPartUri(partUri);
+    }
+
+    public static ValidatedPartUri getSourcePartUriFromRelationshipPartUri(ValidatedPartUri relationshipUri) {
+        if (comparePartUri(relationshipUri, PackageRelationship.CONTAINER_RELATIONSHIP_PART_NAME) == 0) {
+            return ROOT_RELATION_VALIDATED_URI;
+        } else {
+            String rel = relationshipUri.normalized;
+            String owner = StringUtils
+                .removeEnd(rel, RELATIONSHIP_PART_EXTENSION_NAME)
+                .replace(RELATIONSHIP_PART_SEGMENT_NAME + "/", "");
+            return validatePartUri(owner);
+        }
+    }
+
+    public static int comparePartUri(ValidatedPartUri uri1, ValidatedPartUri uri2) {
+        return uri1.normalized.compareTo(uri2.normalized);
     }
 
     ///////////////////////////////////////////////////////////////////

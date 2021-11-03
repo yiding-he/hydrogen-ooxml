@@ -3,6 +3,7 @@ package com.hyd.ms.io.packaging;
 import com.hyd.ms.io.FileAccess;
 import com.hyd.ms.io.FileMode;
 import com.hyd.ms.io.FileShare;
+import com.hyd.ms.io.packaging.PackUriHelper.ValidatedPartUri;
 import com.hyd.utilities.assertion.Assert;
 
 import java.io.Closeable;
@@ -20,7 +21,7 @@ public abstract class Package implements Closeable {
 
     private final FileAccess fileAccess;
 
-    private final TreeMap<PackUriHelper.ValidatedPartUri, PackagePart> partList = new TreeMap<>();
+    private final TreeMap<ValidatedPartUri, PackagePart> partList = new TreeMap<>();
 
     private final InternalRelationshipCollection relationships = new InternalRelationshipCollection(this, null);
 
@@ -63,7 +64,14 @@ public abstract class Package implements Closeable {
     }
 
     private void closePart(PackagePart part) {
-        // TODO implement com.hyd.ms.io.packaging.Package.closePart()
+        if (PackUriHelper.isRelationshipPartUri(part.getUri()) &&
+            PackUriHelper.comparePartUri(part.getUri(), PackageRelationship.CONTAINER_RELATIONSHIP_PART_NAME) != 0) {
+            ValidatedPartUri owningPartUri = PackUriHelper.getSourcePartUriFromRelationshipPartUri(part.getUri());
+            if (this.partList.containsKey(owningPartUri)) {
+                this.partList.get(owningPartUri).close();
+            }
+        }
+        part.close();
     }
 
     private void flushRelationships() {
@@ -76,7 +84,7 @@ public abstract class Package implements Closeable {
     }
 
     public PackagePart createPart(URI partUri, String contentType, CompressionOption compressionOption) {
-        PackUriHelper.ValidatedPartUri validatedPartUri = PackUriHelper.validatePartUri(partUri);
+        ValidatedPartUri validatedPartUri = PackUriHelper.validatePartUri(partUri);
         if (partList.containsKey(validatedPartUri)) {
             throw new IllegalStateException("part '" + partUri + "' already exists");
         }
@@ -94,7 +102,7 @@ public abstract class Package implements Closeable {
     }
 
     public PackagePart getPart(URI partUri) {
-        PackUriHelper.ValidatedPartUri validatePartUri = PackUriHelper.validatePartUri(partUri);
+        ValidatedPartUri validatePartUri = PackUriHelper.validatePartUri(partUri);
         if (partList.containsKey(validatePartUri)) {
             return partList.get(validatePartUri);
         } else {
@@ -119,7 +127,7 @@ public abstract class Package implements Closeable {
     public void deletePart(URI partUri) {
         Assert.notNull(partUri, "partUri");
 
-        PackUriHelper.ValidatedPartUri validatedPartUri = PackUriHelper.validatePartUri(partUri);
+        ValidatedPartUri validatedPartUri = PackUriHelper.validatePartUri(partUri);
         if (partList.containsKey(validatedPartUri)) {
             PackagePart part = partList.get(validatedPartUri);
             part.setDeleted(true);
@@ -186,7 +194,7 @@ public abstract class Package implements Closeable {
     /////////////////////////////////////////////////////////////////// private methods
 
     private void addIfNoPrefixCollisionDetected(
-        PackUriHelper.ValidatedPartUri validatePartUri, PackagePart part
+        ValidatedPartUri validatePartUri, PackagePart part
     ) {
         partList.put(validatePartUri, part);
 
@@ -220,7 +228,7 @@ public abstract class Package implements Closeable {
     public boolean partExists(URI uri) {
         throwIfDisposed();
         Assert.not(uri == null, "uri cannot be null");
-        PackUriHelper.ValidatedPartUri validatedPartUri = PackUriHelper.validatePartUri(uri);
+        ValidatedPartUri validatedPartUri = PackUriHelper.validatePartUri(uri);
         return partList.containsKey(validatedPartUri);
     }
 

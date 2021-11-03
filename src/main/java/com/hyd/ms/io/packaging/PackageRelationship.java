@@ -1,8 +1,14 @@
 package com.hyd.ms.io.packaging;
 
+import com.hyd.ms.io.packaging.PackUriHelper.ValidatedPartUri;
+
 import java.net.URI;
 
+import static com.hyd.ms.io.packaging.PackUriHelper.validatePartUri;
+
 public class PackageRelationship {
+
+    public static ValidatedPartUri CONTAINER_RELATIONSHIP_PART_NAME = validatePartUri("/_rels/.rels");
 
     private final Package _package;
 

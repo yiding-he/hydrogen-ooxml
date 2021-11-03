@@ -53,6 +53,10 @@ public abstract class PackagePart {
         return relationshipPart;
     }
 
+    public void close() {
+        // nothing need to do
+    }
+
     public void flush() {
         // nothing need to do
     }
