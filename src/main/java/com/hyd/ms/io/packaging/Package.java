@@ -6,6 +6,7 @@ import com.hyd.ms.io.FileShare;
 import com.hyd.utilities.assertion.Assert;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.net.URI;
 import java.util.TreeMap;
 
@@ -19,11 +20,11 @@ public abstract class Package implements Closeable {
 
     private final FileAccess fileAccess;
 
-    private final PackageProperties packageProperties = new PartBasedPackageProperties(this);
-
     private final TreeMap<PackUriHelper.ValidatedPartUri, PackagePart> partList = new TreeMap<>();
 
     private final InternalRelationshipCollection relationships = new InternalRelationshipCollection(this, null);
+
+    private PackageProperties packageProperties;
 
     private boolean disposed = false;
 
@@ -40,8 +41,35 @@ public abstract class Package implements Closeable {
     }
 
     public PackageProperties getPackageProperties() {
+        if (packageProperties == null) {
+            packageProperties = new PartBasedPackageProperties(this);
+        }
         return packageProperties;
     }
+
+    @Override
+    public void close() throws IOException {
+        if (packageProperties != null) {
+            packageProperties.close();
+        }
+
+        flushRelationships();
+
+        this.partList.forEach((validatedPartUri, part) -> {
+            closePart(part);
+        });
+        this.partList.clear();
+        this.disposed = true;
+    }
+
+    private void closePart(PackagePart part) {
+        // TODO implement com.hyd.ms.io.packaging.Package.closePart()
+    }
+
+    private void flushRelationships() {
+        this.relationships.flush();
+    }
+
 
     public PackagePart createPart(URI partUri, String contentType) {
         return createPart(partUri, contentType, CompressionOption.NotCompressed);
@@ -125,10 +153,15 @@ public abstract class Package implements Closeable {
         throwIfDisposed();
         throwIfReadOnly();
 
-        // TODO implement these:
-        // flushRelationships();
-        // doOperationOnEachPart(this::doWriteRelationshipsXml);
-        // doOperationOnEachPart(this::doFlush);
+        flushRelationships();
+
+        this.partList.values().forEach(p -> {
+            if (!p.isRelationshipPart()) {
+                p.flushRelationships();
+            }
+            p.flush();
+        });
+
         flushCore();
     }
 
@@ -182,6 +215,13 @@ public abstract class Package implements Closeable {
                 "collision detected for '" + normalizedPartName + "', " +
                     "there is a '" + followingPartName + "' already exists");
         }
+    }
+
+    public boolean partExists(URI uri) {
+        throwIfDisposed();
+        Assert.not(uri == null, "uri cannot be null");
+        PackUriHelper.ValidatedPartUri validatedPartUri = PackUriHelper.validatePartUri(uri);
+        return partList.containsKey(validatedPartUri);
     }
 
     ///////////////////////////////////////////////////////////////////

@@ -5,6 +5,8 @@ import com.hyd.utilities.assertion.AssertException;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,6 +28,8 @@ class ZipPackageTest {
         String filePath = "target/" + System.currentTimeMillis() + ".zip";
 
         ZipPackage zipPackage = new ZipPackage(filePath);
+        PackagePart part = zipPackage.createPart(new URI("/1.txt"), "text/plain");
+        part.getStream().write().write("Hello".getBytes(StandardCharsets.UTF_8));
         zipPackage.close();
 
         assertTrue(new File(filePath).exists());

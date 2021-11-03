@@ -64,6 +64,6 @@ public class ZipArchiveEntry {
     }
 
     public Stream getStream() {
-        return null;
+        return this.content;
     }
 }

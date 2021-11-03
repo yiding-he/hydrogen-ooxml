@@ -1,7 +1,14 @@
 package com.hyd.ms.io.packaging;
 
+import com.hyd.ms.io.FileAccess;
 import com.hyd.utilities.assertion.Assert;
+import com.hyd.xml.Xml;
+import com.hyd.xml.XmlException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -9,15 +16,25 @@ import java.util.UUID;
 
 public class InternalRelationshipCollection {
 
+    public static final ContentType RELATIONSHIP_PART_CONTENT_TYPE
+        = new ContentType("application/vnd.openxmlformats-package.relationships+xml");
+
+    public static final String RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
+
     /**
      * our package - in case _sourcePart is null
      */
-    private final Package _package;
+    private final Package __package;
 
     /**
      * owning part - null if package is the owner
      */
     private final PackagePart sourcePart;
+
+    /**
+     * where our relationships are persisted
+     */
+    private PackagePart relationshipPart;
 
     /**
      * the URI of our relationship part
@@ -31,15 +48,36 @@ public class InternalRelationshipCollection {
     /**
      * Constructor
      *
-     * @param _package package
+     * @param __package package
      * @param part     will be null if package is the source of the relationships
      */
-    public InternalRelationshipCollection(Package _package, PackagePart part) {
-        this._package = _package;
+    public InternalRelationshipCollection(Package __package, PackagePart part) {
+        this.__package = __package;
         this.sourcePart = part;
         this.uri = PackUriHelper.getRelationshipPartUri(
             part == null ? PackUriHelper.PACKAGE_ROOT_URI : sourcePart.getUri().getUri()
         );
+        if (__package.partExists(this.uri)) {
+            this.relationshipPart = __package.getPart(this.uri);
+            parseRelationshipPart(this.relationshipPart);
+        }
+    }
+
+    private void parseRelationshipPart(PackagePart relationshipPart) {
+        FileAccess packageAccess = this.__package.getFileOpenAccess();
+        Assert.that(
+            packageAccess == FileAccess.Read || packageAccess == FileAccess.ReadWrite,
+            "This method should only be called when FileAccess is Read or ReadWrite"
+        );
+
+        Document doc = Xml.parseDocumentAndClose(relationshipPart.getStream().read());
+        Xml.lookupElements(doc.getDocumentElement(), "Relationship").forEach(rel -> {
+            final String id = rel.getAttribute("Id");
+            final String type = rel.getAttribute("Type");
+            final String target = rel.getAttribute("Target");
+            final TargetMode targetMode = TargetMode.fromRelationship(rel);
+            add(PackUriHelper.uri(target), targetMode, type, id, true);
+        });
     }
 
     public Iterator<PackageRelationship> getRelationshipIterator() {
@@ -70,7 +108,7 @@ public class InternalRelationshipCollection {
         else
             validateUniqueRelationshipId(id);
 
-        PackageRelationship relationship = new PackageRelationship(_package, sourcePart, targetUri, targetMode, relationshipType, id);
+        PackageRelationship relationship = new PackageRelationship(__package, sourcePart, targetUri, targetMode, relationshipType, id);
         relationships.put(id, relationship);
 
         //If we are adding relationships as a part of Parsing the underlying relationship part, we should not set
@@ -95,5 +133,52 @@ public class InternalRelationshipCollection {
 
     private static String generateRelationshipId() {
         return "R" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+    }
+
+    public void flush() {
+        if (this.relationships.isEmpty()) {
+            if (this.__package.partExists(this.uri)) {
+                this.__package.deletePart(this.uri);
+            }
+            this.relationshipPart = null;
+        } else {
+            ensureRelationshipPart();
+            writeRelationshipPart(this.relationshipPart);
+        }
+        this.dirty = false;
+    }
+
+    private void writeRelationshipPart(PackagePart relationshipPart) {
+        Document doc = Xml.newDocument();
+        Element relationships = doc.createElement("Relationships");
+        Xml.setDefaultNamespace(relationships, RELATIONSHIPS_NAMESPACE);
+        doc.appendChild(relationships);
+
+        this.getRelationshipIterator().forEachRemaining(rel -> {
+            Element relationship = doc.createElement("Relationship");
+            Xml.setAttr(relationship, "Id", rel.getId());
+            Xml.setAttr(relationship, "Type", rel.getRelationshipType());
+            Xml.setAttr(relationship, "Target", rel.getTargetUri().toString());
+            if (rel.getTargetMode() != TargetMode.Internal) {
+                Xml.setAttr(relationship, "TargetMode", rel.getTargetMode().name());
+            }
+            relationships.appendChild(relationship);
+        });
+
+        try (OutputStream outputStream = relationshipPart.getStream().write()) {
+            outputStream.write(Xml.toBytes(doc));
+        } catch (IOException e) {
+            throw new XmlException(e);
+        }
+    }
+
+    private void ensureRelationshipPart() {
+        if (this.relationshipPart == null || this.relationshipPart.isDeleted()) {
+            if (this.__package.partExists(this.uri)) {
+                this.relationshipPart = this.__package.getPart(this.uri);
+            } else {
+                this.relationshipPart = this.__package.createPart(this.uri, RELATIONSHIP_PART_CONTENT_TYPE.toString());
+            }
+        }
     }
 }

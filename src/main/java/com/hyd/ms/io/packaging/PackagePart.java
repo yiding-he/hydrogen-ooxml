@@ -1,6 +1,8 @@
 package com.hyd.ms.io.packaging;
 
+import com.hyd.ms.io.FileAccess;
 import com.hyd.ms.io.Stream;
+import com.hyd.utilities.assertion.Assert;
 
 public abstract class PackagePart {
 
@@ -38,6 +40,21 @@ public abstract class PackagePart {
 
     public Stream getStream() {
         return getStreamCore();
+    }
+
+    public void flushRelationships() {
+        Assert.not(deleted, "part is deleted");
+        if (container.getFileOpenAccess() != FileAccess.Read) {
+            relationships.flush();
+        }
+    }
+
+    public boolean isRelationshipPart() {
+        return relationshipPart;
+    }
+
+    public void flush() {
+        // nothing need to do
     }
 
     /////////////////////////////////////////////////////////////////// abstract methods

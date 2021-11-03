@@ -77,10 +77,14 @@ public class ZipPackage extends Package {
 
     @Override
     public void close() throws IOException {
-        if (this.packageFileMode != FileMode.Open) {
-            this.contentTypeHelper.saveToFile();
-            this.zipArchive.write(this.stream.write());
-            this.stream.close();
+        try {
+            if (this.packageFileMode != FileMode.Open) {
+                this.contentTypeHelper.saveToFile();
+                this.zipArchive.write(this.stream.write());
+                this.stream.close();
+            }
+        } finally {
+            super.close();
         }
     }
 
@@ -162,14 +166,14 @@ public class ZipPackage extends Package {
             defaultDictionary.forEach((extension, contentType) -> {
                 Element def = document.createElement("Default");
                 def.setAttribute("Extension", extension);
-                def.setAttribute("ContentType", contentType.toString());
+                def.setAttribute("ContentType", contentType.getOriginalString());
                 types.appendChild(def);
             });
 
             overrideDictionary.forEach((uri, contentType) -> {
                 Element override = document.createElement("Override");
                 override.setAttribute("PartName", uri.toString());
-                override.setAttribute("ContentType", contentType.toString());
+                override.setAttribute("ContentType", contentType.getOriginalString());
                 types.appendChild(override);
             });
 

@@ -72,4 +72,7 @@ public class ContentType {
         return this.type.equalsIgnoreCase(other.type) && this.subType.equalsIgnoreCase(other.subType);
     }
 
+    public String getOriginalString() {
+        return originalString;
+    }
 }

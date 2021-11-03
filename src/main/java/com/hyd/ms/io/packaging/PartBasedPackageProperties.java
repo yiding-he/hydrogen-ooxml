@@ -49,7 +49,6 @@ public class PartBasedPackageProperties extends PackageProperties {
             );
         }
 
-        this.propertyPart.isDeleted();
         // TODO Write XML content to this part
     }
 }
