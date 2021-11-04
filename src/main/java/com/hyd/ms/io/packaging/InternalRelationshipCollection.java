@@ -181,4 +181,8 @@ public class InternalRelationshipCollection {
             }
         }
     }
+
+    public void clear() {
+        this.relationships.clear();
+    }
 }

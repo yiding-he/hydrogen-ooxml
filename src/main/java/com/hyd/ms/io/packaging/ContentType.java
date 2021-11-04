@@ -75,4 +75,9 @@ public class ContentType {
     public String getOriginalString() {
         return originalString;
     }
+
+    @Override
+    public String toString() {
+        return getOriginalString();
+    }
 }

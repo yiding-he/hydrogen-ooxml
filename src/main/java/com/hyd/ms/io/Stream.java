@@ -1,5 +1,7 @@
 package com.hyd.ms.io;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,17 +32,27 @@ public abstract class Stream implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         try {
-            if (inputStream != null) {
-                inputStream.close();
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } finally {
+                if (outputStream != null) {
+                    outputStream.close();
+                }
             }
         } catch (IOException e) {
-            throw e;
-        } finally {
-            if (outputStream != null) {
-                outputStream.close();
-            }
+            throw new IoException(e);
+        }
+    }
+
+    public void copyTo(Stream targetStream) {
+        try {
+            IOUtils.copy(read(), targetStream.write());
+        } catch (IOException e) {
+            throw new IoException(e);
         }
     }
 

@@ -5,7 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class ByteArrayStream extends Stream {
+public class MemoryStream extends Stream {
 
     private static class MyByteArrayOutputStream extends ByteArrayOutputStream {
 

@@ -3,6 +3,7 @@ package com.hyd.ms.io.packaging;
 import com.hyd.ms.io.FileAccess;
 import com.hyd.ms.io.FileMode;
 import com.hyd.ms.io.FileShare;
+import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.packaging.PackUriHelper.ValidatedPartUri;
 import com.hyd.utilities.assertion.Assert;
 
@@ -15,6 +16,10 @@ public abstract class Package implements Closeable {
 
     public static Package open(String path, FileMode packageMode, FileAccess packageAccess, FileShare packageShare) {
         return new ZipPackage(path, packageMode, packageAccess);
+    }
+
+    public static Package open(Stream stream, FileMode packageMode, FileAccess packageAccess) {
+        return new ZipPackage(stream, packageMode, packageAccess);
     }
 
     /////////////////////////////////////////////////////////////////// members
@@ -117,7 +122,7 @@ public abstract class Package implements Closeable {
         return this.relationships.add(targetUri, targetMode, relationshipType, id);
     }
 
-    public PackageRelationshipCollection GetRelationshipsByType(String relationshipType) {
+    public PackageRelationshipCollection getRelationshipsByType(String relationshipType) {
         throwIfDisposed();
         throwIfWriteOnly();
         Assert.notBlank(relationshipType, "relationshipType");
@@ -151,10 +156,21 @@ public abstract class Package implements Closeable {
         }
 
         if (PackUriHelper.isRelationshipPartUri(partUri)) {
-
+            ValidatedPartUri owningPartUri = PackUriHelper.getSourcePartUriFromRelationshipPartUri(validatedPartUri);
+            if (PackUriHelper.comparePartUri(owningPartUri, PackUriHelper.ROOT_RELATION_VALIDATED_URI) == 0) {
+                this.clearRelationships();
+            } else {
+                if (this.partExists(owningPartUri.getUri())) {
+                    this.getPart(owningPartUri.getUri()).clearRelationships();
+                }
+            }
         } else {
             deletePart(PackUriHelper.getRelationshipPartUri(validatedPartUri.getUri()));
         }
+    }
+
+    private void clearRelationships() {
+        this.relationships.clear();
     }
 
     public void flush() {

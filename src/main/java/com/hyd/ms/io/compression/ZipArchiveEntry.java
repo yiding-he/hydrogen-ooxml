@@ -1,6 +1,6 @@
 package com.hyd.ms.io.compression;
 
-import com.hyd.ms.io.ByteArrayStream;
+import com.hyd.ms.io.MemoryStream;
 import com.hyd.ms.io.Stream;
 import com.hyd.utilities.assertion.Assert;
 import org.apache.commons.io.IOUtils;
@@ -14,7 +14,7 @@ public class ZipArchiveEntry {
 
     private final String name;
 
-    private final ByteArrayStream content = new ByteArrayStream();
+    private final MemoryStream content = new MemoryStream();
 
     private final boolean directory;
 

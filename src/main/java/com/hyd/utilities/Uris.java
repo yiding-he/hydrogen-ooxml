@@ -17,4 +17,17 @@ public class Uris {
             return StringUtils.substring(uri, lastSlash + 1, lastDot);
         }
     }
+
+    public static String getExtension(String uri) {
+        int lastSlash = StringUtils.lastIndexOf(uri, "/");
+        if (lastSlash < 0) {
+            return StringUtils.substringBeforeLast(uri, ".");
+        } else {
+            return StringUtils.substringBeforeLast(StringUtils.substring(uri, lastSlash + 1), ".");
+        }
+    }
+
+    public static String combine(String...  fragments) {
+        return String.join("/", fragments);
+    }
 }

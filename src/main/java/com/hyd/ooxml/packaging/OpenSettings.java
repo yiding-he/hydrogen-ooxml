@@ -15,6 +15,13 @@ public class OpenSettings {
             MarkupCompatibilityProcessMode.NoProcess, FileFormatVersions.Office2007
         );
 
+    public OpenSettings() {
+    }
+
+    public OpenSettings(boolean autoSave) {
+        this.autoSave = autoSave;
+    }
+
     public OpenSettings(OpenSettings other) {
         this.autoSave = other.autoSave;
         this.mcSettings.setProcessMode(other.mcSettings.getProcessMode());

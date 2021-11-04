@@ -61,6 +61,14 @@ public abstract class PackagePart {
         // nothing need to do
     }
 
+    public String getContentType() {
+        return this.contentType.toString();
+    }
+
+    public void clearRelationships() {
+        this.relationships.clear();
+    }
+
     /////////////////////////////////////////////////////////////////// abstract methods
 
     protected abstract Stream getStreamCore();

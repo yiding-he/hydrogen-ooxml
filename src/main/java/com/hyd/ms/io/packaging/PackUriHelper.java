@@ -97,6 +97,14 @@ public class PackUriHelper {
         return uri1.normalized.compareTo(uri2.normalized);
     }
 
+    public static int comparePartUri(URI uri1, URI uri2) {
+        return uri1.compareTo(uri2);
+    }
+
+    public static URI resolvePartUri(URI parentUri, URI targetUri) {
+        return parentUri.resolve(targetUri.toString());
+    }
+
     ///////////////////////////////////////////////////////////////////
 
     /**
