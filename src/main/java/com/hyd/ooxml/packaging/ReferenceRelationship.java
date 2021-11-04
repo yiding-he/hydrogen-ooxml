@@ -17,4 +17,13 @@ public abstract class ReferenceRelationship {
 
     private URI uri;
 
+    public ReferenceRelationship() {
+    }
+
+    public ReferenceRelationship(URI uri, boolean external, String relationshipType, String id) {
+        this.relationshipType = relationshipType;
+        this.external = external;
+        this.id = id;
+        this.uri = uri;
+    }
 }

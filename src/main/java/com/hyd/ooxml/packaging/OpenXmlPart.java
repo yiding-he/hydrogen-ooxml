@@ -2,6 +2,7 @@ package com.hyd.ooxml.packaging;
 
 import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.packaging.PackagePart;
+import com.hyd.ooxml.OpenXmlPartRootElement;
 
 import java.net.URI;
 
@@ -36,8 +37,6 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
         return this.packagePart.getStream();
     }
 
-    public abstract String getRelationshipType();
-
     public void createInternal2(OpenXmlPackage openXmlPackage, OpenXmlPart parent, String contentType, URI partUri) {
         // TODO implement com.hyd.ooxml.packaging.OpenXmlPart.createInternal2()
     }
@@ -45,4 +44,27 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
     public void feedData(Stream stream) {
         // TODO implement com.hyd.ooxml.packaging.OpenXmlPart.feedData()
     }
+
+    public boolean isRootElementLoaded() {
+        return this.getInternalRootElement() != null;
+    }
+
+    //////////////////////////
+
+    protected OpenXmlPartRootElement getInternalRootElement() {
+        return null;
+    }
+
+    /**
+     * Gets the root element of the current part.
+     *
+     * @return null if the part is not a defined XML part.
+     */
+    protected OpenXmlPartRootElement getPartRootElement() {
+        return null;
+    }
+
+    //////////////////////////
+
+    public abstract String getRelationshipType();
 }

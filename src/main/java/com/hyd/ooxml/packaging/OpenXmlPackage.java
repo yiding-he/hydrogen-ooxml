@@ -39,7 +39,26 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
     }
 
     public void save() {
-        // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.save()
+        savePartContents(true);
+        this.__package.flush();
+    }
+
+    private void savePartContents(boolean save) {
+        // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.savePartContents()
+        boolean isAnyPartChanged = false;
+        for (IdPartPair part : parts()) {
+            if (part.openXmlPart.isRootElementLoaded()) {
+                isAnyPartChanged = true;
+                break;
+            }
+        }
+        if (isAnyPartChanged) {
+            for (IdPartPair part : parts()) {
+                if (part.openXmlPart.isRootElementLoaded()) {
+                    part.openXmlPart.getPartRootElement().save();
+                }
+            }
+        }
     }
 
     @Override
