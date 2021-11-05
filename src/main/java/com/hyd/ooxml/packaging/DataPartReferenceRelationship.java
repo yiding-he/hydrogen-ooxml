@@ -31,7 +31,7 @@ public class DataPartReferenceRelationship extends ReferenceRelationship {
 
     protected DataPartReferenceRelationship(DataPart dataPart, String relationshipType, String id) {
         super(dataPart.getUri(), false, relationshipType, id);
-        Assert.notNull(dataPart, "dataPart cannot be null");
+        Assert.notNull(dataPart, "dataPart");
         this.dataPart = dataPart;
     }
 

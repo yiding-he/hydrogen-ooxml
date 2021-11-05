@@ -42,7 +42,7 @@ public class PresentationDocument extends OpenXmlPackage {
     }
 
     public static PresentationDocument createFromTemplate(String path) {
-        Assert.notBlank(path, "path cannot be empty or null");
+        Assert.notBlank(path, "path");
 
         String extension = Uris.getExtension(path);
         Assert.that(

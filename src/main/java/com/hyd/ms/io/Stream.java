@@ -56,6 +56,14 @@ public abstract class Stream implements Closeable {
         }
     }
 
+    public void writeBytes(byte[] bytes) {
+        try {
+            write().write(bytes);
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
+    }
+
     public abstract long length();
 
     public abstract void setLength(long length);

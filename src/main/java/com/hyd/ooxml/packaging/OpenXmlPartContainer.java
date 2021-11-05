@@ -123,7 +123,7 @@ public abstract class OpenXmlPartContainer {
         boolean keepIdAndUri, String rId
     ) {
         if (keepIdAndUri) {
-            Assert.notBlank(rId, "rId cannot be empty");
+            Assert.notBlank(rId, "rId");
         }
 
         OpenXmlPart child;

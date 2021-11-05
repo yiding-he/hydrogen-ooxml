@@ -92,7 +92,7 @@ public class ZipPackage extends Package {
     protected PackagePart createPartCore(
         URI partUri, String contentType, CompressionOption compressionOption
     ) {
-        Assert.notBlank(contentType, "ContentType is empty");
+        Assert.notBlank(contentType, "ContentType");
         PackUriHelper.ValidatedPartUri validatedPartUri = PackUriHelper.validatePartUri(partUri);
 
         // We need to remove the leading "/" character at the beginning of the part name.
