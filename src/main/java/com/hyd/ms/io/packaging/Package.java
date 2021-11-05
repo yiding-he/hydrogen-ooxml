@@ -129,6 +129,12 @@ public abstract class Package implements Closeable {
         return new PackageRelationshipCollection(relationships, relationshipType);
     }
 
+    public PackageRelationshipCollection getRelationships() {
+        throwIfDisposed();
+        throwIfWriteOnly();
+        return new PackageRelationshipCollection(relationships);
+    }
+
     public void deletePart(URI partUri) {
         Assert.notNull(partUri, "partUri");
 
@@ -167,6 +173,10 @@ public abstract class Package implements Closeable {
         } else {
             deletePart(PackUriHelper.getRelationshipPartUri(validatedPartUri.getUri()));
         }
+    }
+
+    public void deleteRelationship(String id) {
+        this.relationships.delete(id);
     }
 
     private void clearRelationships() {

@@ -210,6 +210,13 @@ public abstract class OpenXmlPartContainer {
         return relationship;
     }
 
+    protected void loadReferencedPartsAndRelationships(
+        OpenXmlPackage openXmlPackage, OpenXmlPart openXmlPart,
+        PackageRelationshipPropertyCollection relationshipCollection, Map<URI, OpenXmlPart> loadedParts
+    ) {
+        // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.loadReferencedPartsAndRelationships()
+    }
+
     ///////////////////////////////////////////////////////////////////
 
     protected abstract OpenXmlPackage getInternalOpenXmlPackage();

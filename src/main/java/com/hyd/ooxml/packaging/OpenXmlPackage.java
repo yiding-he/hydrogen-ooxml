@@ -8,7 +8,9 @@ import com.hyd.utilities.assertion.Assert;
 
 import java.io.Closeable;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Closeable {
 
@@ -32,6 +34,30 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
 
     protected OpenXmlPackage(PackageLoader loader, OpenSettings settings) {
         openSettings = new OpenSettings(settings);
+        __package = loader.getPackage();
+        if (loader.isOpen()) {
+            load(__package);
+        }
+    }
+
+    private void load(Package __package) {
+        // todo implement OpenXmlPackage.load()
+        PackageRelationshipPropertyCollection relationshipCollection = new PackageRelationshipPropertyCollection(__package);
+
+        boolean hasMainPart = false;
+        for (RelationshipProperty rp : relationshipCollection) {
+            if (rp.getRelationshipType().equals(getMainPartRelationshipType())) {
+                hasMainPart = true;
+                URI targetUri = PackUriHelper.resolvePartUri(URI.create("/"), rp.getTargetUri());
+                PackagePart metroPart = __package.getPart(targetUri);
+                mainPartContentType = metroPart.getContentType();
+                break;
+            }
+        }
+        Assert.that(hasMainPart, "main part not found");
+
+        Map<URI, OpenXmlPart> loadedParts = new HashMap<>();
+        loadReferencedPartsAndRelationships(this, (OpenXmlPart)null, relationshipCollection, loadedParts);
     }
 
     public PackagePart createMetroPart(URI partUri, String contentType) {
@@ -132,4 +158,6 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
     protected abstract OpenXmlPackage createClone(Stream stream);
 
     protected abstract OpenXmlPackage openClone(Stream stream, boolean isEditable, OpenSettings openSettings);
+
+    protected abstract String getMainPartRelationshipType();
 }

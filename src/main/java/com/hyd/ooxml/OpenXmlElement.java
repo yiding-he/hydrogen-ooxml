@@ -1,15 +1,21 @@
 package com.hyd.ooxml;
 
+import com.hyd.ooxml.framework.metadata.OpenXmlAttribute;
 import com.hyd.utilities.assertion.Assert;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-import java.util.Iterator;
-import java.util.Stack;
+import java.util.*;
 
 public abstract class OpenXmlElement implements Iterable<OpenXmlElement> {
 
     private OpenXmlElement next;
 
     private OpenXmlElement parent;
+
+    private List<OpenXmlAttribute> attributes = new ArrayList<>();
+
+    ///////////////////////////////////////////////////////////////////
 
     public OpenXmlElement getParent() {
         return parent;
@@ -44,25 +50,39 @@ public abstract class OpenXmlElement implements Iterable<OpenXmlElement> {
         }
     }
 
+    public void append(OpenXmlElement... children) {
+        append(Arrays.asList(children));
+    }
+
     @Override
     public Iterator<OpenXmlElement> iterator() {
         return new OpenXmlChildElements(this).iterator();
     }
 
-    public String getLocalName() {
+    public Iterable<OpenXmlAttribute> attributes() {
+        return this.attributes;
+    }
+
+    private void ensureAnnotated() {
         Assert.that(
             this.getClass().isAnnotationPresent(XmlElement.class),
             "class not annotated by XmlElement: %s", this.getClass().getCanonicalName()
         );
+    }
+
+    public String getLocalName() {
+        ensureAnnotated();
         return this.getClass().getAnnotation(XmlElement.class).localName();
     }
 
-    public OpenXmlNamespace getNamespace() {
-        Assert.that(
-            this.getClass().isAnnotationPresent(XmlElement.class),
-            "class not annotated by XmlElement: %s", this.getClass().getCanonicalName()
-        );
-        return this.getClass().getAnnotation(XmlElement.class).namespace();
+    public String getPrefix() {
+        ensureAnnotated();
+        return this.getClass().getAnnotation(XmlElement.class).prefix();
+    }
+
+    public OpenXmlNamespace[] getNamespaces() {
+        ensureAnnotated();
+        return this.getClass().getAnnotation(XmlElement.class).namespaces();
     }
 
     public <T extends OpenXmlElement> T appendChild(T newChild) {
@@ -119,4 +139,10 @@ public abstract class OpenXmlElement implements Iterable<OpenXmlElement> {
         };
     }
 
+    protected Element toDomElement(Document domDocument) {
+        String prefix = getPrefix();
+        String localName = getLocalName();
+        String tagName = prefix.isEmpty() ? localName : (prefix + ":" + localName);
+        return domDocument.createElement(tagName);
+    }
 }

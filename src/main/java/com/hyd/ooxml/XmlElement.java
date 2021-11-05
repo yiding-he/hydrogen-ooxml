@@ -11,5 +11,7 @@ public @interface XmlElement {
 
     String localName();
 
-    OpenXmlNamespace namespace();
+    String prefix() default "";
+
+    OpenXmlNamespace[] namespaces();
 }

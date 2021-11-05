@@ -2,6 +2,7 @@ package com.hyd.ooxml.packaging;
 
 import com.hyd.ms.io.Stream;
 import com.hyd.ooxml.PresentationDocumentType;
+import com.hyd.ooxml.generated.packaging.PresentationPart;
 import com.hyd.utilities.Uris;
 import com.hyd.utilities.assertion.Assert;
 
@@ -114,6 +115,11 @@ public class PresentationDocument extends OpenXmlPackage {
     @Override
     protected OpenXmlPackage openClone(Stream stream, boolean isEditable, OpenSettings openSettings) {
         return open(stream, isEditable, openSettings);
+    }
+
+    @Override
+    protected String getMainPartRelationshipType() {
+        return PresentationPart.RELATIONSHIP_TYPE_CONSTANT;
     }
 
     ///////////////////////////////////////////////////////////////////

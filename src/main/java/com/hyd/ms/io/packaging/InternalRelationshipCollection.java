@@ -185,4 +185,8 @@ public class InternalRelationshipCollection {
     public void clear() {
         this.relationships.clear();
     }
+
+    public void delete(String id) {
+        this.dirty = this.relationships.remove(id) != null;
+    }
 }

@@ -43,4 +43,12 @@ public class PackageLoader {
         this.__package = __package;
         this.open = isOpen;
     }
+
+    public Package getPackage() {
+        return __package;
+    }
+
+    public boolean isOpen() {
+        return open;
+    }
 }

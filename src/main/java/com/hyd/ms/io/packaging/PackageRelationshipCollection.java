@@ -10,4 +10,8 @@ public class PackageRelationshipCollection extends FilteredIterable<PackageRelat
     public PackageRelationshipCollection(InternalRelationshipCollection relationships, String filter) {
         super(relationships.getRelationshipIterator(), r -> r.getRelationshipType().equals(filter));
     }
+
+    public PackageRelationshipCollection(InternalRelationshipCollection relationships) {
+        super(relationships.getRelationshipIterator(), r -> true);
+    }
 }

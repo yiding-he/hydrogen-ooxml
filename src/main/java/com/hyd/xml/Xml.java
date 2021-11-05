@@ -69,7 +69,7 @@ public class Xml {
     public static byte[] toBytes(Document document, boolean indent) {
         try {
             Transformer tr = TransformerFactory.newInstance().newTransformer();
-            tr.setOutputProperty(OutputKeys.INDENT, indent? "yes": "no");
+            tr.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
             tr.setOutputProperty(OutputKeys.METHOD, "xml");
             tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
             tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
@@ -89,7 +89,11 @@ public class Xml {
     }
 
     public static String toString(Document document) {
-        return new String(toBytes(document, true), StandardCharsets.UTF_8);
+        return toString(document, false);
+    }
+
+    public static String toString(Document document, boolean indent) {
+        return new String(toBytes(document, indent), StandardCharsets.UTF_8);
     }
 
     ///////////////////////////////////////////////////////////////////
