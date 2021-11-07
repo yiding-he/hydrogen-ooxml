@@ -54,6 +54,14 @@ public abstract class OpenXmlPartRootElement extends OpenXmlCompositeElement {
         return Xml.toString(document);
     }
 
+    public OpenXmlPart getOpenXmlPart() {
+        return openXmlPart;
+    }
+
+    public void setOpenXmlPart(OpenXmlPart openXmlPart) {
+        this.openXmlPart = openXmlPart;
+    }
+
     private void buildChildElements(Element root) {
         // TODO implement com.hyd.ooxml.OpenXmlPartRootElement.buildChildElements()
     }

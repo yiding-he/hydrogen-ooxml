@@ -84,7 +84,7 @@ public abstract class OpenXmlPartContainer {
         }
     }
 
-    private String attachChild(OpenXmlPart part, String id) {
+    protected String attachChild(OpenXmlPart part, String id) {
         PackageRelationship relationship;
         if (id == null) {
             relationship = createRelationship(part.getUri(), TargetMode.Internal, part.getRelationshipType());

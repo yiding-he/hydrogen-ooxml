@@ -31,6 +31,10 @@ public class Assert {
         that(!assertion, message, messageParams);
     }
 
+    public static void shouldBeNull(Object obj, String message, Object... messageParams) {
+        that(obj == null, message, messageParams);
+    }
+
     public static void isNCName(String s, String name) {
         not(s.contains(":"), name + " should be a NCName");
     }

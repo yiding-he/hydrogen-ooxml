@@ -81,7 +81,7 @@ public class PartUriHelper {
         );
     }
 
-    private URI getUniquePartUri(
+    public URI getUniquePartUri(
         String contentType, URI parentUri, String targetPath, String targetName, String targetExt
     ) {
         URI partUri;

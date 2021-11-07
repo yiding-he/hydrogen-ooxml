@@ -45,13 +45,21 @@ public class InternalRelationshipCollection {
 
     private boolean dirty;
 
+    public InternalRelationshipCollection(PackagePart part) {
+        this(part.getPackage(), part);
+    }
+
+    public InternalRelationshipCollection(Package __package) {
+        this(__package, null);
+    }
+
     /**
      * Constructor
      *
      * @param __package package
      * @param part     will be null if package is the source of the relationships
      */
-    public InternalRelationshipCollection(Package __package, PackagePart part) {
+    private InternalRelationshipCollection(Package __package, PackagePart part) {
         this.__package = __package;
         this.sourcePart = part;
         this.uri = PackUriHelper.getRelationshipPartUri(

@@ -2,7 +2,7 @@ package com.hyd.ms.io;
 
 public enum FileMode {
     CreateNew(false),
-    Create(false),
+    Create(true),
     Open(false),
     OpenOrCreate(true),
     Truncate(false),

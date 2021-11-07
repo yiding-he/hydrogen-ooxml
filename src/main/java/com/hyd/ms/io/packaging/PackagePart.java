@@ -10,18 +10,17 @@ public abstract class PackagePart {
 
     private final Package container;
 
-    private final InternalRelationshipCollection relationships;
-
     private final boolean relationshipPart;
 
     private final ContentType contentType;
+
+    private InternalRelationshipCollection relationships;
 
     private boolean deleted;
 
     protected PackagePart(Package container, PackUriHelper.ValidatedPartUri uri, String contentType) {
         this.uri = uri;
         this.container = container;
-        this.relationships = new InternalRelationshipCollection(container, this);
         this.relationshipPart = PackUriHelper.isRelationshipPartUri(uri);
         this.contentType = contentType == null ? null : new ContentType(contentType);
     }
@@ -42,10 +41,14 @@ public abstract class PackagePart {
         return getStreamCore();
     }
 
+    public Package getPackage() {
+        return this.container;
+    }
+
     public void flushRelationships() {
-        Assert.not(deleted, "part is deleted");
-        if (container.getFileOpenAccess() != FileAccess.Read) {
-            relationships.flush();
+        Assert.not(this.deleted, "part is deleted");
+        if (this.container.getFileOpenAccess() != FileAccess.Read && this.relationships != null) {
+            this.relationships.flush();
         }
     }
 
@@ -67,6 +70,13 @@ public abstract class PackagePart {
 
     public void clearRelationships() {
         this.relationships.clear();
+    }
+
+    private void ensureRelationships() {
+        if (this.relationships == null) {
+            Assert.not(this.isRelationshipPart(), "relationship part cannot have relationships");
+            this.relationships = new InternalRelationshipCollection(this);
+        }
     }
 
     /////////////////////////////////////////////////////////////////// abstract methods

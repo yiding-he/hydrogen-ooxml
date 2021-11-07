@@ -42,7 +42,7 @@ public class PackUriHelper {
             return ROOT_RELATION_URI_OBJ;
         }
 
-        Assert.not(isRelationshipPartUri(partUri), "no relationship for a relationship");
+        Assert.not(isRelationshipPartUri(partUri), "no relationship for a relationship: %s", partUri);
         return partUri.resolve("_rels/" + FilenameUtils.getName(partUri.toASCIIString()) + ".rels");
     }
 

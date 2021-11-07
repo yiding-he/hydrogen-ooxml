@@ -1,9 +1,6 @@
 package com.hyd.ms.io.packaging;
 
-import com.hyd.ms.io.FileAccess;
-import com.hyd.ms.io.FileMode;
-import com.hyd.ms.io.FileShare;
-import com.hyd.ms.io.Stream;
+import com.hyd.ms.io.*;
 import com.hyd.ms.io.packaging.PackUriHelper.ValidatedPartUri;
 import com.hyd.utilities.assertion.Assert;
 
@@ -28,7 +25,7 @@ public abstract class Package implements Closeable {
 
     private final TreeMap<ValidatedPartUri, PackagePart> partList = new TreeMap<>();
 
-    private final InternalRelationshipCollection relationships = new InternalRelationshipCollection(this, null);
+    private InternalRelationshipCollection relationships;
 
     private PackageProperties packageProperties;
 
@@ -54,9 +51,13 @@ public abstract class Package implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if (packageProperties != null) {
-            packageProperties.close();
+            try {
+                packageProperties.close();
+            } catch (IOException e) {
+                throw new IoException(e);
+            }
         }
 
         flushRelationships();
@@ -118,7 +119,15 @@ public abstract class Package implements Closeable {
     }
 
     public PackageRelationship createRelationship(
+        URI targetUri, TargetMode targetMode, String relationshipType) {
+        return createRelationship(targetUri, targetMode, relationshipType, null);
+    }
+
+    public PackageRelationship createRelationship(
         URI targetUri, TargetMode targetMode, String relationshipType, String id) {
+        throwIfDisposed();
+        throwIfReadOnly();
+        ensureRelationships();
         return this.relationships.add(targetUri, targetMode, relationshipType, id);
     }
 
@@ -132,6 +141,7 @@ public abstract class Package implements Closeable {
     public PackageRelationshipCollection getRelationships() {
         throwIfDisposed();
         throwIfWriteOnly();
+        ensureRelationships();
         return new PackageRelationshipCollection(relationships);
     }
 
@@ -176,11 +186,15 @@ public abstract class Package implements Closeable {
     }
 
     public void deleteRelationship(String id) {
-        this.relationships.delete(id);
+        if (this.relationships != null) {
+            this.relationships.delete(id);
+        }
     }
 
     private void clearRelationships() {
-        this.relationships.clear();
+        if (this.relationships != null) {
+            this.relationships.clear();
+        }
     }
 
     public void flush() {
@@ -197,6 +211,14 @@ public abstract class Package implements Closeable {
         });
 
         flushCore();
+    }
+
+    /////////////////////////////////////////////////////////////////// private methods
+
+    private void ensureRelationships() {
+        if (this.relationships == null) {
+            this.relationships = new InternalRelationshipCollection(this);
+        }
     }
 
     private void throwIfReadOnly() {
@@ -216,8 +238,6 @@ public abstract class Package implements Closeable {
             throw new IllegalStateException("Package is closed");
         }
     }
-
-    /////////////////////////////////////////////////////////////////// private methods
 
     private void addIfNoPrefixCollisionDetected(
         ValidatedPartUri validatePartUri, PackagePart part

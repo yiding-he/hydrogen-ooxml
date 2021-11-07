@@ -4,6 +4,7 @@ import com.hyd.ms.io.MemoryStream;
 import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.packaging.Package;
 import com.hyd.ms.io.packaging.*;
+import com.hyd.ooxml.ApplicationType;
 import com.hyd.utilities.assertion.Assert;
 
 import java.io.Closeable;
@@ -19,6 +20,8 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
     protected String mainPartContentType;
 
     protected OpenSettings openSettings;
+
+    private boolean disposed;
 
     protected CompressionOption compressionOption = CompressionOption.Normal;
 
@@ -89,7 +92,31 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
 
     @Override
     public void close() {
-        // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.close()
+        dispose();
+    }
+
+    public void dispose() {
+        dispose(true);
+    }
+
+    protected void dispose(boolean disposing) {
+        if (disposed) {
+            return;
+        }
+        if (disposing) {
+            savePartContents(openSettings.isAutoSave());
+            deleteUnusedDataPartOnClose();
+            this.__package.close();
+            this.__package = null;
+            this.childrenPartsDictionary.clear();
+            this.referenceRelationships.clear();
+            this.partUriHelper = null;
+        }
+        disposed = true;
+    }
+
+    private void deleteUnusedDataPartOnClose() {
+        // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.deleteUnusedDataPartOnClose()
     }
 
     @Override
@@ -118,6 +145,16 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
         // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.changeDocumentTypeInternal()
     }
 
+    public URI getUniquePartUri(
+        String contentType, URI parentUri, String targetPath, String targetName, String targetExt
+    ) {
+        URI partUri;
+        do {
+            partUri = partUriHelper.getUniquePartUri(contentType, parentUri, targetPath, targetName, targetExt);
+        } while (this.__package.partExists(partUri));
+        return partUri;
+    }
+
     public URI getUniquePartUri(String contentType, URI parentUri, URI targetUri) {
         URI partUri;
         do {
@@ -139,7 +176,7 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
     @Override
     protected PackageRelationship createRelationship(
         URI targetUri, TargetMode targetMode, String relationshipType) {
-        return null;// TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.createRelationship()
+        return __package.createRelationship(targetUri, targetMode, relationshipType);
     }
 
     @Override
@@ -151,6 +188,10 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
     public DataPart addDataPartToList(DataPart dataPart) {
         this.dataPartList.add(dataPart);
         return dataPart;
+    }
+
+    public ApplicationType getApplicationType() {
+        return ApplicationType.None;
     }
 
     ///////////////////////////////////////////////////////////////////

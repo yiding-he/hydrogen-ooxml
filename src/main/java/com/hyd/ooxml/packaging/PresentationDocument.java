@@ -134,4 +134,20 @@ public class PresentationDocument extends OpenXmlPackage {
     }
 
 
+    public PresentationPart addPresentationPart() {
+        PresentationPart childPart = new PresentationPart();
+        initPart(childPart, this.mainPartContentType);
+        return childPart;
+    }
+
+    private void initPart(PresentationPart part, String contentType) {
+        initPart(part, contentType, null);
+    }
+
+    private void initPart(PresentationPart newPart, String contentType, String id) {
+        Assert.notBlank(contentType, "contentType");
+        newPart.createInternal(getInternalOpenXmlPackage(), getThisOpenXmlPart(), contentType, null);
+        String relationshipId = attachChild(newPart, id);
+        this.childrenPartsDictionary.put(relationshipId, newPart);
+    }
 }

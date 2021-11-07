@@ -11,7 +11,6 @@ import com.hyd.xml.Xml;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +75,7 @@ public class ZipPackage extends Package {
     /////////////////////////////////////////////////////////////////// methods
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         try {
             if (this.packageFileMode != FileMode.Open) {
                 this.contentTypeHelper.saveToFile();
