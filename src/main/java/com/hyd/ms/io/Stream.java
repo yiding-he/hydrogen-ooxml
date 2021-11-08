@@ -6,6 +6,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 public abstract class Stream implements Closeable {
 
@@ -71,4 +72,13 @@ public abstract class Stream implements Closeable {
     public abstract InputStream read();
 
     public abstract OutputStream write();
+
+    @Override
+    public String toString() {
+        try {
+            return IOUtils.toString(read(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IoException(e);
+        }
+    }
 }

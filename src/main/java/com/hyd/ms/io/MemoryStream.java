@@ -33,6 +33,7 @@ public class MemoryStream extends Stream {
 
     @Override
     public OutputStream write() {
+        this.data.reset();
         return this.data;
     }
 }

@@ -15,11 +15,11 @@ class PresentationDocumentTest {
 
         createPresentationParts(presentationPart);
 
-        presentationDoc.save();
         presentationDoc.close();
     }
 
     private void createPresentationParts(PresentationPart presentationPart) {
         // TODO implement com.hyd.ooxml.packaging.PresentationDocumentTest.createPresentationParts()
+
     }
 }

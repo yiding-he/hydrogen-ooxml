@@ -1,15 +1,17 @@
 package com.hyd.ooxml;
 
 import com.hyd.utilities.assertion.Assert;
-
-import java.io.OutputStream;
+import com.hyd.xml.XmlBuilder;
 
 public abstract class OpenXmlCompositeElement extends OpenXmlElement {
 
     private OpenXmlElement lastChild;
 
-    protected void writeContentTo(OutputStream outputStream) {
-        // todo implement OpenXmlCompositeElement.writeContentTo()
+    @Override
+    protected void writeContentTo(XmlBuilder xmlBuilder) {
+        for (OpenXmlElement childElement : getChildElements()) {
+            childElement.writeTo(xmlBuilder);
+        }
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")
@@ -46,5 +48,9 @@ public abstract class OpenXmlCompositeElement extends OpenXmlElement {
     @Override
     public boolean hasChildren() {
         return this.lastChild != null;
+    }
+
+    public OpenXmlElementList getChildElements() {
+        return hasChildren()? new OpenXmlChildElements(this) : OpenXmlElementList.EMPTY;
     }
 }

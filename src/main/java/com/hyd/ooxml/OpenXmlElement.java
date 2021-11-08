@@ -2,8 +2,7 @@ package com.hyd.ooxml;
 
 import com.hyd.ooxml.framework.metadata.OpenXmlAttribute;
 import com.hyd.utilities.assertion.Assert;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import com.hyd.xml.XmlBuilder;
 
 import java.util.*;
 
@@ -139,10 +138,33 @@ public abstract class OpenXmlElement implements Iterable<OpenXmlElement> {
         };
     }
 
-    protected Element toDomElement(Document domDocument) {
+    public void writeTo(XmlBuilder builder) {
+        XmlBuilder.XmlBuilderElement parent = builder.getCurrentElement();
+        XmlBuilder.XmlBuilderElement child = builder.appendChild(parent, getXmlTagName());
+
+        for (OpenXmlAttribute attribute : attributes()) {
+            child.addAttribute(attribute);
+        }
+
+        if (hasChildren() || !getInnerText().isEmpty()) {
+            builder.setCurrentElement(child);
+            writeContentTo(builder);
+        }
+    }
+
+
+
+    protected String getXmlTagName() {
         String prefix = getPrefix();
         String localName = getLocalName();
-        String tagName = prefix.isEmpty() ? localName : (prefix + ":" + localName);
-        return domDocument.createElement(tagName);
+        return prefix.isEmpty() ? localName : (prefix + ":" + localName);
     }
+
+    public String getInnerText() {
+        return "";
+    }
+
+    ///////////////////////////////////////////////////////////////////
+
+    protected abstract void writeContentTo(XmlBuilder xmlBuilder);
 }
