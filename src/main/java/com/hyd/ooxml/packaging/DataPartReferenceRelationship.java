@@ -36,4 +36,8 @@ public class DataPartReferenceRelationship extends ReferenceRelationship {
     }
 
     private DataPart dataPart;
+
+    public DataPart getDataPart() {
+        return dataPart;
+    }
 }

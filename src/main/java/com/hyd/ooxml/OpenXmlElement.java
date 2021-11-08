@@ -84,6 +84,25 @@ public abstract class OpenXmlElement implements Iterable<OpenXmlElement> {
         return this.getClass().getAnnotation(XmlElement.class).namespaces();
     }
 
+    public void setAttribute(OpenXmlNamespace namespace, String name, String value) {
+        getOrCreateAttribute(namespace, name).setValue(value);
+    }
+
+    public void setAttribute(String name, String value) {
+        getOrCreateAttribute(null, name).setValue(value);
+    }
+
+    private OpenXmlAttribute getOrCreateAttribute(OpenXmlNamespace namespace, String name) {
+        String nameWithPrefix = namespace == null ? name : (namespace.getPrefix() + ":" + name);
+        OpenXmlAttribute attribute = this.attributes.stream()
+            .filter(a -> a.getNameWithPrefix().equals(nameWithPrefix)).findFirst().orElse(null);
+        if (attribute == null) {
+            attribute = new OpenXmlAttribute(namespace, name, null);
+            this.attributes.add(attribute);
+        }
+        return attribute;
+    }
+
     public <T extends OpenXmlElement> T appendChild(T newChild) {
         throw new UnsupportedOperationException("Non-composite elements do not have child elements");
     }
@@ -166,5 +185,7 @@ public abstract class OpenXmlElement implements Iterable<OpenXmlElement> {
 
     ///////////////////////////////////////////////////////////////////
 
-    protected abstract void writeContentTo(XmlBuilder xmlBuilder);
+    protected void writeContentTo(XmlBuilder xmlBuilder) {
+        // nothing to do for non-composite elements
+    }
 }

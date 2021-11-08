@@ -9,9 +9,7 @@ import com.hyd.utilities.assertion.Assert;
 
 import java.io.Closeable;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Closeable {
 
@@ -44,7 +42,6 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
     }
 
     private void load(Package __package) {
-        // todo implement OpenXmlPackage.load()
         PackageRelationshipPropertyCollection relationshipCollection = new PackageRelationshipPropertyCollection(__package);
 
         boolean hasMainPart = false;
@@ -60,7 +57,7 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
         Assert.that(hasMainPart, "main part not found");
 
         Map<URI, OpenXmlPart> loadedParts = new HashMap<>();
-        loadReferencedPartsAndRelationships(this, (OpenXmlPart)null, relationshipCollection, loadedParts);
+        loadReferencedPartsAndRelationships(this, null, relationshipCollection, loadedParts);
     }
 
     public PackagePart createMetroPart(URI partUri, String contentType) {
@@ -73,7 +70,6 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
     }
 
     private void savePartContents(boolean save) {
-        // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.savePartContents()
         boolean isAnyPartChanged = false;
         for (IdPartPair part : parts()) {
             if (part.openXmlPart.isRootElementLoaded()) {
@@ -115,8 +111,65 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
         disposed = true;
     }
 
+    public Iterable<OpenXmlPart> getAllParts() {
+
+        return () -> {
+            Set<OpenXmlPart> visited = new HashSet<>();
+            Deque<OpenXmlPart> queue = new LinkedList<>();
+
+            parts().forEach(pair -> queue.offer(pair.openXmlPart));
+            return new Iterator<OpenXmlPart>() {
+
+                OpenXmlPart current;
+
+                @Override
+                public boolean hasNext() {
+                    if (queue.isEmpty()) {
+                        return false;
+                    }
+
+                    current = queue.poll();
+                    current.parts().forEach(pair -> {
+                        if (visited.add(pair.openXmlPart)) {
+                            queue.offer(pair.openXmlPart);
+                        }
+                    });
+                    return true;
+                }
+
+                @Override
+                public OpenXmlPart next() {
+                    return current;
+                }
+            };
+        };
+    }
+
     private void deleteUnusedDataPartOnClose() {
-        // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.deleteUnusedDataPartOnClose()
+
+        Set<DataPart> dataPartSet = new HashSet<>(dataPartList);
+        for (DataPartReferenceRelationship r : getDataPartReferenceRelationships()) {
+            dataPartSet.remove(r.getDataPart());
+            if (dataPartSet.isEmpty()) {
+                // No more DataPart in the set. All DataParts are referenced somewhere.
+                return;
+            }
+        }
+
+        for (OpenXmlPart part : getAllParts()) {
+            for (DataPartReferenceRelationship r : part.getDataPartReferenceRelationships()) {
+                dataPartSet.remove(r.getDataPart());
+                if (dataPartSet.isEmpty()) {
+                    // No more DataPart in the set. All DataParts are referenced somewhere.
+                    return;
+                }
+            }
+        }
+
+        for (DataPart dataPart : dataPartSet) {
+            dataPart.destroy();
+            dataPartList.remove(dataPart);
+        }
     }
 
     @Override
@@ -142,6 +195,7 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
     }
 
     protected <T extends OpenXmlPart> void changeDocumentTypeInternal() {
+        throw new UnsupportedOperationException("Not implemented yet");
         // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.changeDocumentTypeInternal()
     }
 
@@ -182,7 +236,8 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
     @Override
     protected PackageRelationship createRelationship(
         URI targetUri, TargetMode targetMode, String relationshipType, String id) {
-        return null;// TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.createRelationship()
+        throw new UnsupportedOperationException("Not implemented yet");
+        // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.createRelationship()
     }
 
     public DataPart addDataPartToList(DataPart dataPart) {

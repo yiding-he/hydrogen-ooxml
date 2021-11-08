@@ -111,7 +111,8 @@ public abstract class OpenXmlPartContainer {
     }
 
     private OpenXmlPart createOpenXmlPart(String relationshipType) {
-        return null;// TODO implement com.hyd.ooxml.packaging.OpenXmlPartContainer.createOpenXmlPart()
+        throw new UnsupportedOperationException("Not implemented yet");
+        // TODO implement com.hyd.ooxml.packaging.OpenXmlPartContainer.createOpenXmlPart()
     }
 
     private OpenXmlPart addSubPartFromOtherPackage(OpenXmlPart part, boolean keepIdAndUri, String rId) {
@@ -196,10 +197,12 @@ public abstract class OpenXmlPartContainer {
     }
 
     void addExternalRelationship(String relationshipType, URI uri, String id) {
+        throw new UnsupportedOperationException("Not implemented yet");
         // TODO implement com.hyd.ooxml.packaging.OpenXmlPartContainer.addExternalRelationship()
     }
 
     void addHyperlinkRelationship(URI uri, boolean external, String id) {
+        throw new UnsupportedOperationException("Not implemented yet");
         // TODO implement com.hyd.ooxml.packaging.OpenXmlPartContainer.addHyperlinkRelationship()
     }
 
@@ -214,6 +217,7 @@ public abstract class OpenXmlPartContainer {
         OpenXmlPackage openXmlPackage, OpenXmlPart openXmlPart,
         PackageRelationshipPropertyCollection relationshipCollection, Map<URI, OpenXmlPart> loadedParts
     ) {
+        throw new UnsupportedOperationException("Not implemented yet");
         // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.loadReferencedPartsAndRelationships()
     }
 

@@ -43,10 +43,12 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
     }
 
     public void createInternal2(OpenXmlPackage openXmlPackage, OpenXmlPart parent, String contentType, URI partUri) {
+        throw new UnsupportedOperationException("Not implemented yet");
         // TODO implement com.hyd.ooxml.packaging.OpenXmlPart.createInternal2()
     }
 
     public void feedData(Stream stream) {
+        throw new UnsupportedOperationException("Not implemented yet");
         // TODO implement com.hyd.ooxml.packaging.OpenXmlPart.feedData()
     }
 

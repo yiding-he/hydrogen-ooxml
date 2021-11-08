@@ -13,5 +13,5 @@ public @interface XmlElement {
 
     String prefix() default "";
 
-    OpenXmlNamespace[] namespaces();
+    OpenXmlNamespace[] namespaces() default {};
 }

@@ -37,4 +37,9 @@ public class DataPart {
     public void feedData(Stream sourceStream) {
         sourceStream.copyTo(getStream());
     }
+
+    public void destroy() {
+        openXmlPackage.__package.deletePart(uri);
+        openXmlPackage = null;
+    }
 }

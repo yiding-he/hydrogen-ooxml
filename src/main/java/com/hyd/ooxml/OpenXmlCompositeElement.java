@@ -7,6 +7,13 @@ public abstract class OpenXmlCompositeElement extends OpenXmlElement {
 
     private OpenXmlElement lastChild;
 
+    protected OpenXmlCompositeElement(OpenXmlElement... childrenElements) {
+        Assert.notNull(childrenElements, "childrenElements");
+        for (OpenXmlElement child : childrenElements) {
+            appendChild(child);
+        }
+    }
+
     @Override
     protected void writeContentTo(XmlBuilder xmlBuilder) {
         for (OpenXmlElement childElement : getChildElements()) {

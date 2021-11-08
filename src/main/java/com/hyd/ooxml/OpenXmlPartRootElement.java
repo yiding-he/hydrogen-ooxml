@@ -33,7 +33,8 @@ public abstract class OpenXmlPartRootElement extends OpenXmlCompositeElement {
         XmlBuilder.XmlBuilderElement root = builder.createRoot(getXmlTagName());
 
         // gather all namespaces from descendants and apply them to root element
-        Set<OpenXmlNamespace> namespaces = new HashSet<>();
+        Set<OpenXmlNamespace> namespaces = new HashSet<>(Arrays.asList(getNamespaces()));
+
         for (OpenXmlElement descendant : descendants()) {
             namespaces.addAll(Arrays.asList(descendant.getNamespaces()));
         }

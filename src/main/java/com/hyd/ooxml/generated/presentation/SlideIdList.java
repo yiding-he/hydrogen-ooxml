@@ -4,10 +4,10 @@ import com.hyd.ooxml.OpenXmlCompositeElement;
 import com.hyd.ooxml.OpenXmlElement;
 import com.hyd.ooxml.XmlElement;
 
-@XmlElement(prefix = "p", localName = "sldMasterIdLst")
-public class SlideMasterIdList extends OpenXmlCompositeElement {
+@XmlElement(prefix = "p", localName = "sldIdLst")
+public class SlideIdList extends OpenXmlCompositeElement {
 
-    public SlideMasterIdList(OpenXmlElement... childrenElements) {
+    public SlideIdList(OpenXmlElement... childrenElements) {
         super(childrenElements);
     }
 }

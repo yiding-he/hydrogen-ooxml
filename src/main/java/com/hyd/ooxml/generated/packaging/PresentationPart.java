@@ -38,13 +38,15 @@ public class PresentationPart extends OpenXmlPart {
     @Override
     protected PackageRelationship createRelationship(
         URI targetUri, TargetMode targetMode, String relationshipType) {
-        return null;// TODO implement com.hyd.ooxml.generated.packaging.PresentationPart.createRelationship()
+        throw new UnsupportedOperationException("Not implemented yet");
+        // TODO implement com.hyd.ooxml.generated.packaging.PresentationPart.createRelationship()
     }
 
     @Override
     protected PackageRelationship createRelationship(
         URI targetUri, TargetMode targetMode, String relationshipType, String id) {
-        return null;// TODO implement com.hyd.ooxml.generated.packaging.PresentationPart.createRelationship()
+        throw new UnsupportedOperationException("Not implemented yet");
+        // TODO implement com.hyd.ooxml.generated.packaging.PresentationPart.createRelationship()
     }
 
     @Override

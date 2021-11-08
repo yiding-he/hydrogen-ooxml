@@ -1,5 +1,7 @@
 package com.hyd.ooxml;
 
+import java.util.stream.Stream;
+
 public enum OpenXmlNamespace {
 
     Relationship("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships"),
@@ -23,5 +25,11 @@ public enum OpenXmlNamespace {
 
     public String getUri() {
         return uri;
+    }
+
+    public static OpenXmlNamespace fromPrefix(String prefix) {
+        return Stream.of(values())
+            .filter(n -> n.prefix.equals(prefix)).findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("prefix '" + prefix + "' is undefined"));
     }
 }
