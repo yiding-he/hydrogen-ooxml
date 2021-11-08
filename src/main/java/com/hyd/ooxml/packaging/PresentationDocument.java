@@ -119,7 +119,7 @@ public class PresentationDocument extends OpenXmlPackage {
 
     @Override
     protected String getMainPartRelationshipType() {
-        return PresentationPart.RELATIONSHIP_TYPE_CONSTANT;
+        return PresentationPart.class.getAnnotation(RelationshipType.class).value();
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -142,12 +142,5 @@ public class PresentationDocument extends OpenXmlPackage {
 
     private void initPart(PresentationPart part, String contentType) {
         initPart(part, contentType, null);
-    }
-
-    private void initPart(PresentationPart newPart, String contentType, String id) {
-        Assert.notBlank(contentType, "contentType");
-        newPart.createInternal(getInternalOpenXmlPackage(), getThisOpenXmlPart(), contentType, null);
-        String relationshipId = attachChild(newPart, id);
-        this.childrenPartsDictionary.put(relationshipId, newPart);
     }
 }

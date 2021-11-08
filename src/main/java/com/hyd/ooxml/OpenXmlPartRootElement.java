@@ -3,17 +3,24 @@ package com.hyd.ooxml;
 import com.hyd.ms.io.Stream;
 import com.hyd.ooxml.framework.metadata.OpenXmlAttribute;
 import com.hyd.ooxml.packaging.OpenXmlPart;
+import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.XmlBuilder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+@Slf4j
 public abstract class OpenXmlPartRootElement extends OpenXmlCompositeElement {
 
     protected OpenXmlPart openXmlPart;
 
     public void save() {
+        Assert.notNull(openXmlPart, "openXmlPart@" + getClass().getSimpleName());
+        log.debug("Saving root part {} to {}/{}.xml",
+            this.getClass().getSimpleName(),
+            this.openXmlPart.getTargetPath(), this.openXmlPart.getTargetName());
         saveToPart(openXmlPart);
     }
 
@@ -49,6 +56,8 @@ public abstract class OpenXmlPartRootElement extends OpenXmlCompositeElement {
         if (hasChildren() || !getInnerText().isEmpty()) {
             builder.setCurrentElement(root);
             writeContentTo(builder);
+        } else {
+            log.debug("hasChildren: {}", hasChildren());
         }
 
         builder.finish();

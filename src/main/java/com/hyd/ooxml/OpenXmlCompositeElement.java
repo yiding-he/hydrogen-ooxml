@@ -2,7 +2,9 @@ package com.hyd.ooxml;
 
 import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.XmlBuilder;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public abstract class OpenXmlCompositeElement extends OpenXmlElement {
 
     private OpenXmlElement lastChild;

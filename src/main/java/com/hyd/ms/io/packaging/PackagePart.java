@@ -4,6 +4,8 @@ import com.hyd.ms.io.FileAccess;
 import com.hyd.ms.io.Stream;
 import com.hyd.utilities.assertion.Assert;
 
+import java.net.URI;
+
 public abstract class PackagePart {
 
     private final PackUriHelper.ValidatedPartUri uri;
@@ -54,6 +56,17 @@ public abstract class PackagePart {
 
     public boolean isRelationshipPart() {
         return relationshipPart;
+    }
+
+    public PackageRelationship createRelationship(
+        URI targetUri, TargetMode targetMode, String relationshipType, String id
+    ) {
+        ensureRelationships();
+        return relationships.add(targetUri, targetMode, relationshipType, id);
+    }
+
+    public PackageRelationship createRelationship(URI targetUri, TargetMode targetMode, String relationshipType) {
+        return createRelationship(targetUri, targetMode, relationshipType, null);
     }
 
     public void close() {

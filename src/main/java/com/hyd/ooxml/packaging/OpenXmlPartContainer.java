@@ -4,6 +4,7 @@ import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.packaging.PackageRelationship;
 import com.hyd.ms.io.packaging.TargetMode;
 import com.hyd.utilities.assertion.Assert;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -70,6 +71,36 @@ public abstract class OpenXmlPartContainer {
         // TODO add PartConstraints validation here
 
         return addSubPart(subPart, id);
+    }
+
+    public <T extends OpenXmlPart> T addNewPart(Class<T> type, String id) {
+        return addNewPartInternal(type, null, id);
+    }
+
+    private <T extends OpenXmlPart> T addNewPartInternal(Class<T> type, String contentType, String id) {
+        Assert.not(
+            id != null && childrenPartsDictionary.containsKey(id),
+            "part id already exists: %s", id
+        );
+
+        try {
+            T part = type.newInstance();
+            initPart(part, StringUtils.defaultString(contentType, part.getAnnotatedContentType()), id);
+            return part;
+        } catch (OpenXmlPackageException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new OpenXmlPackageException(e);
+        }
+    }
+
+    protected void initPart(OpenXmlPart newPart, String contentType, String id) {
+        Assert.notBlank(contentType, "contentType");
+        OpenXmlPackage internalOpenXmlPackage = getInternalOpenXmlPackage();
+        OpenXmlPart thisOpenXmlPart = getThisOpenXmlPart();
+        newPart.createInternal(internalOpenXmlPackage, thisOpenXmlPart, contentType, null);
+        String relationshipId = attachChild(newPart, id);
+        this.childrenPartsDictionary.put(relationshipId, newPart);
     }
 
     private OpenXmlPart addSubPart(OpenXmlPart subPart, String id) {

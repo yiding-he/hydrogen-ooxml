@@ -2,11 +2,14 @@ package com.hyd.ooxml.packaging;
 
 import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.packaging.PackagePart;
+import com.hyd.ms.io.packaging.PackageRelationship;
+import com.hyd.ms.io.packaging.TargetMode;
 import com.hyd.ooxml.ApplicationType;
 import com.hyd.ooxml.OpenXmlPartRootElement;
 import com.hyd.utilities.assertion.Assert;
 import org.apache.commons.lang3.StringUtils;
 
+import java.lang.annotation.Annotation;
 import java.net.URI;
 
 public abstract class OpenXmlPart extends OpenXmlPartContainer {
@@ -30,7 +33,7 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
     }
 
     public String getContentType() {
-        return this.packagePart.getContentType();
+        return this.packagePart == null? null: this.packagePart.getContentType();
     }
 
     @Override
@@ -105,11 +108,17 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
         Assert.not(openXmlPackage == null, "cannot find openXmlPackage");
         Assert.not(this.packagePart != null, "this part is already initialized");
 
+        this.openXmlPackage = openXmlPackage;
+
         URI parentUri = parent == null ? URI.create("/") : parent.getUri();
         // noinspection ConstantConditions
         String targetPath = getTargetPath(openXmlPackage, getTargetPath());
         if (targetPath == null) {
             targetPath = ".";
+        }
+
+        if (contentType == null) {
+            contentType = getAnnotatedContentType();
         }
 
         String targetFileExt = StringUtils.defaultString(targetExt, getTargetFileExtension());
@@ -134,7 +143,7 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
         partRootElement.setOpenXmlPart(this);
 
         OpenXmlPartRootElement internalRootElement = getInternalRootElement();
-        if (internalRootElement != null) {
+        if (internalRootElement != null && internalRootElement != partRootElement) {
             internalRootElement.setOpenXmlPart(null);
         }
 
@@ -146,17 +155,55 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
         return this;
     }
 
+    private void ensureAnnotated(Class<? extends Annotation> annotationClass) {
+        Assert.that(
+            getClass().isAnnotationPresent(annotationClass),
+            "class not annotated by %s: %s",
+            annotationClass.getSimpleName(),
+            this.getClass().getCanonicalName()
+        );
+    }
+
+    public String getTargetPath() {
+        ensureAnnotated(XmlPart.class);
+        return getClass().getAnnotation(XmlPart.class).targetPath();
+    }
+
+    public String getTargetName() {
+        ensureAnnotated(XmlPart.class);
+        return getClass().getAnnotation(XmlPart.class).targetName();
+    }
+
+    public String getRelationshipType() {
+        ensureAnnotated(RelationshipType.class);
+        return getClass().getAnnotation(RelationshipType.class).value();
+    }
+
+    public String getAnnotatedContentType() {
+        if (getClass().isAnnotationPresent(ContentType.class)) {
+            return getClass().getAnnotation(ContentType.class).value();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    protected PackageRelationship createRelationship(
+        URI targetUri, TargetMode targetMode, String relationshipType) {
+        return packagePart.createRelationship(targetUri, targetMode, relationshipType);
+    }
+
+    @Override
+    protected PackageRelationship createRelationship(
+        URI targetUri, TargetMode targetMode, String relationshipType, String id) {
+        return packagePart.createRelationship(targetUri, targetMode, relationshipType, id);
+    }
+
     ////////////////////////// target path and file name
-
-    public abstract String getTargetPath();
-
-    public abstract String getTargetName();
 
     protected String getTargetFileExtension() {
         return DEFAULT_TARGET_EXT;
     }
 
     //////////////////////////
-
-    public abstract String getRelationshipType();
 }

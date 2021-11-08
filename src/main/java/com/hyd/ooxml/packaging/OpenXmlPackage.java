@@ -6,11 +6,15 @@ import com.hyd.ms.io.packaging.Package;
 import com.hyd.ms.io.packaging.*;
 import com.hyd.ooxml.ApplicationType;
 import com.hyd.utilities.assertion.Assert;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Closeable;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+@Slf4j
 public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Closeable {
 
     protected Package __package;
@@ -70,17 +74,24 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
     }
 
     private void savePartContents(boolean save) {
+
+        List<OpenXmlPart> partsList = StreamSupport
+            .stream(getAllParts().spliterator(), false).collect(Collectors.toList());
+
+        log.debug("all parts count: {}", partsList.size());
+
         boolean isAnyPartChanged = false;
-        for (IdPartPair part : parts()) {
-            if (part.openXmlPart.isRootElementLoaded()) {
+        for (OpenXmlPart part : partsList) {
+            if (part.isRootElementLoaded()) {
                 isAnyPartChanged = true;
                 break;
             }
         }
         if (isAnyPartChanged) {
-            for (IdPartPair part : parts()) {
-                if (part.openXmlPart.isRootElementLoaded()) {
-                    part.openXmlPart.getPartRootElement().save();
+            for (OpenXmlPart part : partsList) {
+                log.debug("part: {}, rootElementLoaded: {}", part.getClass().getSimpleName(), part.isRootElementLoaded());
+                if (part.isRootElementLoaded()) {
+                    part.getPartRootElement().save();
                 }
             }
         }
