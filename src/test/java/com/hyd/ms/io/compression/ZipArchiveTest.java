@@ -34,11 +34,11 @@ class ZipArchiveTest {
 
     private void outputEntries(String name, ZipArchive zipArchive) {
         System.out.println("[Entries of " + name + "]");
-        zipArchive.entries().forEachRemaining(
-            entry -> System.out.println(
+        for (ZipArchiveEntry entry : zipArchive.entries()) {
+            System.out.println(
                 entry.getName() + " : " + (entry.isDirectory() ? "(DIR)" : entry.getContent().length)
-            )
-        );
+            );
+        }
     }
 
     @Test
@@ -47,8 +47,8 @@ class ZipArchiveTest {
             ZipArchiveTest.class.getResourceAsStream("/javax.annotation-api-1.3.2.jar")
         );
 
-        zipArchive.entries().forEachRemaining(entry -> {
+        for (ZipArchiveEntry entry : zipArchive.entries()) {
             System.out.println(entry.getName() + " : " + entry.getContent().length);
-        });
+        }
     }
 }

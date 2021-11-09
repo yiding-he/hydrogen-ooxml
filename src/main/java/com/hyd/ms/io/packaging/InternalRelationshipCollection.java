@@ -142,6 +142,9 @@ public class InternalRelationshipCollection {
     }
 
     public void flush() {
+        if (!dirty) {
+            return;
+        }
         if (this.relationships.isEmpty()) {
             if (this.__package.partExists(this.uri)) {
                 this.__package.deletePart(this.uri);

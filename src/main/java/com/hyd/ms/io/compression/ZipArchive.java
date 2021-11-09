@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -21,11 +20,18 @@ public class ZipArchive {
 
     private final Map<String, ZipArchiveEntry> entriesDictionary = new HashMap<>();
 
+    private ZipArchiveMode mode;
+
     public ZipArchive() {
 
     }
 
     public ZipArchive(InputStream is) {
+        this(is, ZipArchiveMode.Read);
+    }
+
+    public ZipArchive(InputStream is, ZipArchiveMode mode) {
+        this.mode = mode;
         try {
             readInputStream(is);
         } catch (IOException e) {
@@ -93,8 +99,12 @@ public class ZipArchive {
     /**
      * get an iterator of entries
      */
-    public Iterator<ZipArchiveEntry> entries() {
-        return this.entriesDictionary.values().iterator();
+    public Iterable<ZipArchiveEntry> entries() {
+        return this.entriesDictionary.values();
+    }
+
+    public ZipArchiveMode getMode() {
+        return mode;
     }
 
     /**

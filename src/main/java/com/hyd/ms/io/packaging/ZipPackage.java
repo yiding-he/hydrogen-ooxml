@@ -6,6 +6,8 @@ import com.hyd.ms.io.FileStream;
 import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.compression.ZipArchive;
 import com.hyd.ms.io.compression.ZipArchiveEntry;
+import com.hyd.ms.io.compression.ZipArchiveMode;
+import com.hyd.utilities.Uris;
 import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.Xml;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +15,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -104,6 +109,13 @@ public class ZipPackage extends Package {
         return new ZipPackagePart(this, zipArchive, zipArchiveEntry, validatedPartUri, contentType);
     }
 
+    /**
+     * This method is for custom implementation specific to the file format.
+     * Returns the part after reading the actual physical bits. The method
+     * returns a null to indicate that the part corresponding to the specified
+     * Uri was not found in the container.
+     * This method does not throw an exception if a part does not exist.
+     */
     @Override
     protected PackagePart getPartCore(URI partUri) {
         // Currently, the design has two aspects which makes it possible to return
@@ -131,7 +143,52 @@ public class ZipPackage extends Package {
 
     @Override
     protected PackagePart[] getPartsCore() {
-        return new PackagePart[0];
+        List<PackagePart> parts = new ArrayList<>();
+        for (ZipArchiveEntry zipArchiveEntry : this.zipArchive.entries()) {
+            if (isZipItemValidOpcPartOrPiece(zipArchiveEntry.getName())) {
+                String partUri = getOpcNameFromZipItemName(zipArchiveEntry.getName());
+                try {
+                    PackUriHelper.ValidatedPartUri validatedPartUri = PackUriHelper.validatePartUri(partUri);
+                    ContentType contentType = contentTypeHelper.getContentType(validatedPartUri);
+                    if (contentType != null) {
+                        parts.add(new ZipPackagePart(
+                            this, zipArchiveEntry.getArchive(), zipArchiveEntry, validatedPartUri, contentType.getOriginalString()
+                        ));
+                    }
+                } catch (Exception e) {
+                    // ignore invalid uri
+                }
+            }
+        }
+        return parts.toArray(new PackagePart[0]);
+    }
+
+    private String getOpcNameFromZipItemName(String entryName) {
+        return "/" + entryName;
+    }
+
+    @SuppressWarnings("RedundantIfStatement")
+    private boolean isZipItemValidOpcPartOrPiece(String entryName) {
+        Assert.notNull(entryName, "entryName");
+        if (entryName.toLowerCase().startsWith(ContentTypeHelper.ENTRY_NAME.toLowerCase())) {
+            return false;
+        } else {
+            // Could be an empty zip folder
+            // We decided to ignore zip items that contain a "/" as this could be a folder in a zip archive
+            // Some tools support this and some don't. There is no way ensure that the zip item never have
+            // a leading "/", although this is a requirement we impose on items created through our API
+            // Therefore we ignore them at the packaging api level.
+            // ------------------
+            // This will ignore the folder entries found in the zip package created by some zip tool
+            // PartNames ending with a "/" slash is also invalid, so we are skipping these entries,
+            // this will also prevent the PackUriHelper.CreatePartUri from throwing when it encounters a
+            // part name ending with a "/"
+            if (entryName.startsWith("/") || entryName.endsWith("/")) {
+                return false;
+            } else {
+                return true;
+            }
+        }
     }
 
     @Override
@@ -166,6 +223,26 @@ public class ZipPackage extends Package {
             this.zipArchive = zipArchive;
             this.packageFileAccess = packageFileAccess;
             this.packageFileMode = packageFileMode;
+
+            if (zipArchive.getMode() == ZipArchiveMode.Read || zipArchive.getMode() == ZipArchiveMode.Update) {
+                ZipArchiveEntry contentTypeEntry = zipArchive.getEntry(ENTRY_NAME);
+                Assert.notNull(contentTypeEntry, "contentTypeEntry");
+                parseContentTypeFile(contentTypeEntry);
+            }
+        }
+
+        private void parseContentTypeFile(ZipArchiveEntry contentTypeEntry) {
+            String xml = new String(contentTypeEntry.getContent(), StandardCharsets.UTF_8);
+            Document doc = Xml.parseString(xml);
+            Xml.lookupElements(doc, "/*[local-name()='Types']/*[local-name()='Default']").forEach(def -> {
+                addDefaultElement(def.getAttribute("Extension"), new ContentType(def.getAttribute("ContentType")));
+            });
+            Xml.lookupElements(doc, "/*[local-name()='Types']/*[local-name()='Override']").forEach(override ->
+                addOverrideElement(
+                    PackUriHelper.validatePartUri(override.getAttribute("PartName")),
+                    new ContentType(override.getAttribute("ContentType"))
+                )
+            );
         }
 
         public void saveToFile() {
@@ -188,7 +265,7 @@ public class ZipPackage extends Package {
 
             overrideDictionary.forEach((uri, contentType) -> {
                 Element override = document.createElement("Override");
-                override.setAttribute("PartName", uri.toString());
+                override.setAttribute("PartName", uri.getUri().toString());
                 override.setAttribute("ContentType", contentType.getOriginalString());
                 types.appendChild(override);
             });
@@ -225,6 +302,19 @@ public class ZipPackage extends Package {
             this.deleteContentType(validatedPartUri);
             this.overrideDictionary.put(validatedPartUri, contentType);
             this.dirty = true;
+        }
+
+        public ContentType getContentType(PackUriHelper.ValidatedPartUri validatedPartUri) {
+            if (overrideDictionary.containsKey(validatedPartUri)) {
+                return overrideDictionary.get(validatedPartUri);
+            }
+
+            String extension = Uris.getExtension(validatedPartUri.toString());
+            if (defaultDictionary.containsKey(extension)) {
+                return defaultDictionary.get(extension);
+            }
+
+            return null;
         }
     }
 }

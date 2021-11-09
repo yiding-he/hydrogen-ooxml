@@ -21,9 +21,9 @@ public class Uris {
     public static String getExtension(String uri) {
         int lastSlash = StringUtils.lastIndexOf(uri, "/");
         if (lastSlash < 0) {
-            return StringUtils.substringBeforeLast(uri, ".");
+            return StringUtils.substringAfterLast(uri, ".");
         } else {
-            return StringUtils.substringBeforeLast(StringUtils.substring(uri, lastSlash + 1), ".");
+            return StringUtils.substringAfterLast(StringUtils.substring(uri, lastSlash + 1), ".");
         }
     }
 

@@ -1,5 +1,6 @@
 package com.hyd.ms.io.packaging;
 
+import com.hyd.ms.io.FileAccess;
 import com.hyd.ms.io.FileMode;
 import com.hyd.utilities.assertion.AssertException;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,18 @@ class ZipPackageTest {
 
     @Test
     public void testOpenFile() throws Exception {
-        ZipPackage zipPackage = new ZipPackage("target/1.zip");
+        ZipPackage zipPackage = new ZipPackage("target/1.pptx", FileMode.Open, FileAccess.Read);
+
+        PackagePart[] packageParts = zipPackage.getPartsCore();
+        System.out.println("packageParts.length = " + packageParts.length);
+        for (PackagePart part : packageParts) {
+            System.out.println(part.getUri() + " - " + part.getContentType());
+        }
+
+        String slideMasterUri = "/ppt/slideLayouts/slideMasters/slideMaster1.xml";
+        PackagePart part = zipPackage.getPart(URI.create(slideMasterUri));
+        System.out.println(part);
+
         zipPackage.close();
     }
 }

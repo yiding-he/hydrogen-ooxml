@@ -127,7 +127,7 @@ public class PackUriHelper {
 
         @Override
         public int compareTo(ValidatedPartUri o) {
-            return this.uri.compareTo(o.uri);
+            return this.normalized.compareTo(o.normalized);
         }
 
         @Override
@@ -135,12 +135,12 @@ public class PackUriHelper {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             ValidatedPartUri that = (ValidatedPartUri) o;
-            return uri.equals(that.uri);
+            return normalized.equals(that.normalized);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(uri);
+            return Objects.hash(normalized);
         }
 
         public boolean isRelationshipPartUri() {

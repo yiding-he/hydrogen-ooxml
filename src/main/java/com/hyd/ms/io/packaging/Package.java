@@ -73,6 +73,11 @@ public abstract class Package implements Closeable {
 
     @Override
     public void close() {
+
+        if (disposed) {
+            return;
+        }
+
         try {
             if (packageProperties != null) {
                 packageProperties.close();
@@ -141,7 +146,9 @@ public abstract class Package implements Closeable {
             return partList.get(validatePartUri);
         } else {
             PackagePart returnedPart = getPartCore(partUri);
-            addIfNoPrefixCollisionDetected(validatePartUri, returnedPart);
+            if (returnedPart != null) {
+                addIfNoPrefixCollisionDetected(validatePartUri, returnedPart);
+            }
             return returnedPart;
         }
     }
