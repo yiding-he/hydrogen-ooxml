@@ -24,12 +24,17 @@ class ZipPackageTest {
     }
 
     @Test
-    public void testCreateEmpty() throws Exception {
-        String filePath = "target/" + System.currentTimeMillis() + ".zip";
+    public void testCreateWithRelationship() throws Exception {
+        String filePath = "target/relationships.zip";
 
         ZipPackage zipPackage = new ZipPackage(filePath);
-        PackagePart part = zipPackage.createPart(new URI("/1.txt"), "text/plain");
-        part.getStream().write().write("Hello".getBytes(StandardCharsets.UTF_8));
+        PackagePart part1 = zipPackage.createPart(URI.create("/1.txt"), "text/plain");
+        part1.getStream().write().write("Hello1".getBytes(StandardCharsets.UTF_8));
+
+        PackagePart part2 = zipPackage.createPart(URI.create("/2.txt"), "text/plain");
+        part2.getStream().write().write("Hello2".getBytes(StandardCharsets.UTF_8));
+        part1.createRelationship(part2.getUri().getUri(), TargetMode.Internal, "any");
+
         zipPackage.close();
 
         assertTrue(new File(filePath).exists());

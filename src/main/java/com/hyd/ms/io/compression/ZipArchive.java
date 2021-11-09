@@ -2,6 +2,7 @@ package com.hyd.ms.io.compression;
 
 import com.hyd.ms.io.IoException;
 import com.hyd.utilities.assertion.Assert;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -15,6 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+@Slf4j
 public class ZipArchive {
 
     private final Map<String, ZipArchiveEntry> entriesDictionary = new HashMap<>();
@@ -102,6 +104,7 @@ public class ZipArchive {
         Assert.notBlank(entryName, "entryName");
         ZipArchiveEntry entry = new ZipArchiveEntry(this, entryName, new byte[0]);
         this.entriesDictionary.put(entryName, entry);
+        log.debug("zip entry '{}' created", entryName);
         return entry;
     }
 

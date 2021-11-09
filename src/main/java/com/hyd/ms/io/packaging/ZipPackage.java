@@ -8,6 +8,7 @@ import com.hyd.ms.io.compression.ZipArchive;
 import com.hyd.ms.io.compression.ZipArchiveEntry;
 import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.Xml;
+import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -18,6 +19,7 @@ import java.util.Map;
 /**
  * In memory zip package struct
  */
+@Slf4j
 public class ZipPackage extends Package {
 
     private final FileMode packageFileMode;
@@ -75,7 +77,7 @@ public class ZipPackage extends Package {
     /////////////////////////////////////////////////////////////////// methods
 
     @Override
-    public void close() {
+    public void dispose(boolean disposing) {
         try {
             if (this.packageFileMode != FileMode.Open) {
                 this.contentTypeHelper.saveToFile();
@@ -83,7 +85,7 @@ public class ZipPackage extends Package {
                 this.stream.close();
             }
         } finally {
-            super.close();
+            super.dispose(disposing);
         }
     }
 
@@ -104,6 +106,21 @@ public class ZipPackage extends Package {
 
     @Override
     protected PackagePart getPartCore(URI partUri) {
+        // Currently, the design has two aspects which makes it possible to return
+        // a null from this method -
+        //  1. All the parts are loaded at Package.Open time and as such, this
+        //     method would not be invoked, unless the user is asking for -
+        //     i. a part that does not exist - we can safely return null
+        //     ii.a part(interleaved/non-interleaved) that was added to the
+        //        underlying package by some other means, and the user wants to
+        //        access the updated part. This is currently not possible as the
+        //        underlying zip i/o layer does not allow for FileShare.ReadWrite.
+        //  2. Also, its not a straightforward task to determine if a new part was
+        //     added as we need to look for atomic as well as interleaved parts and
+        //     this has to be done in a case-sensitive manner. So, effectively
+        //     we will have to go through the entire list of zip items to determine
+        //     if there are any updates.
+        //  If ever the design changes, then this method must be updated accordingly
         return null;
     }
 

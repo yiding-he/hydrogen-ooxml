@@ -3,17 +3,15 @@ package com.hyd.ms.io.packaging;
 import com.hyd.ms.io.FileAccess;
 import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.Xml;
-import com.hyd.xml.XmlException;
+import com.hyd.xml.XmlBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
-import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.UUID;
 
+@Slf4j
 public class InternalRelationshipCollection {
 
     public static final ContentType RELATIONSHIP_PART_CONTENT_TYPE
@@ -88,8 +86,8 @@ public class InternalRelationshipCollection {
         });
     }
 
-    public Iterator<PackageRelationship> getRelationshipIterator() {
-        return this.relationships.values().iterator();
+    public Iterable<PackageRelationship> getRelationshipIterable() {
+        return this.relationships.values();
     }
 
     public PackageRelationship add(
@@ -157,27 +155,21 @@ public class InternalRelationshipCollection {
     }
 
     private void writeRelationshipPart(PackagePart relationshipPart) {
-        Document doc = Xml.newDocument();
-        Element relationships = doc.createElement("Relationships");
-        Xml.setDefaultNamespace(relationships, RELATIONSHIPS_NAMESPACE);
-        doc.appendChild(relationships);
+        log.debug("Writing relationships {}", relationshipPart.getUri());
 
-        this.getRelationshipIterator().forEachRemaining(rel -> {
-            Element relationship = doc.createElement("Relationship");
-            Xml.setAttr(relationship, "Id", rel.getId());
-            Xml.setAttr(relationship, "Type", rel.getRelationshipType());
-            Xml.setAttr(relationship, "Target", rel.getTargetUri().toString());
-            if (rel.getTargetMode() != TargetMode.Internal) {
-                Xml.setAttr(relationship, "TargetMode", rel.getTargetMode().name());
-            }
-            relationships.appendChild(relationship);
-        });
+        XmlBuilder xmlBuilder = new XmlBuilder(relationshipPart.getStream());
+        XmlBuilder.XmlBuilderElement root = xmlBuilder
+            .createRoot("Relationships")
+            .setDefaultNamespace("http://schemas.openxmlformats.org/package/2006/relationships");
 
-        try (OutputStream outputStream = relationshipPart.getStream().write()) {
-            outputStream.write(Xml.toBytes(doc));
-        } catch (IOException e) {
-            throw new XmlException(e);
+        for (PackageRelationship rel : getRelationshipIterable()) {
+            xmlBuilder.appendChild(root, "Relationship")
+                .addAttribute("Type", rel.getRelationshipType())
+                .addAttribute("Target", rel.getTargetUri().toString())
+                .addAttribute("Id", rel.getId());
         }
+
+        xmlBuilder.finish();
     }
 
     private void ensureRelationshipPart() {

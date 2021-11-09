@@ -1,12 +1,15 @@
 package com.hyd.ms.io.packaging;
 
-import com.hyd.ms.io.*;
+import com.hyd.ms.io.FileAccess;
+import com.hyd.ms.io.FileMode;
+import com.hyd.ms.io.FileShare;
+import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.packaging.PackUriHelper.ValidatedPartUri;
 import com.hyd.utilities.assertion.Assert;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.TreeMap;
 
 public abstract class Package implements Closeable {
@@ -23,7 +26,7 @@ public abstract class Package implements Closeable {
 
     private final FileAccess fileAccess;
 
-    private final TreeMap<ValidatedPartUri, PackagePart> partList = new TreeMap<>();
+    private TreeMap<ValidatedPartUri, PackagePart> partList = new TreeMap<>();
 
     private InternalRelationshipCollection relationships;
 
@@ -50,27 +53,50 @@ public abstract class Package implements Closeable {
         return packageProperties;
     }
 
-    @Override
-    public void close() {
-        if (packageProperties != null) {
-            try {
-                packageProperties.close();
-            } catch (IOException e) {
-                throw new IoException(e);
-            }
-        }
+    public void flush() {
+        throwIfDisposed();
+        throwIfReadOnly();
 
         flushRelationships();
 
-        this.partList.forEach((validatedPartUri, part) -> {
-            closePart(part);
+        this.partList.values().forEach(p -> {
+            // DoWriteRelationshipsXml
+            if (!p.isRelationshipPart()) {
+                p.flushRelationships();
+            }
+            // DoFlush
+            p.flush();
         });
-        this.partList.clear();
-        this.disposed = true;
+
+        flushCore();
+    }
+
+    @Override
+    public void close() {
+        try {
+            if (packageProperties != null) {
+                packageProperties.close();
+            }
+
+            flushRelationships();
+
+            new HashMap<>(this.partList).forEach((validatedPartUri, part) -> {
+                // DoCloseRelationshipsXml
+                if (!part.isRelationshipPart() && !part.isDeleted()) {
+                    part.flushRelationships();
+                }
+                // DoClose
+                closePart(part);
+            });
+
+            dispose(true);
+        } finally {
+            this.disposed = true;
+        }
     }
 
     private void closePart(PackagePart part) {
-        if (PackUriHelper.isRelationshipPartUri(part.getUri()) &&
+        if (part.isRelationshipPart() &&
             PackUriHelper.comparePartUri(part.getUri(), PackageRelationship.CONTAINER_RELATIONSHIP_PART_NAME) != 0) {
             ValidatedPartUri owningPartUri = PackUriHelper.getSourcePartUriFromRelationshipPartUri(part.getUri());
             if (this.partList.containsKey(owningPartUri)) {
@@ -81,7 +107,9 @@ public abstract class Package implements Closeable {
     }
 
     private void flushRelationships() {
-        this.relationships.flush();
+        if (this.relationships != null) {
+            this.relationships.flush();
+        }
     }
 
 
@@ -197,22 +225,6 @@ public abstract class Package implements Closeable {
         }
     }
 
-    public void flush() {
-        throwIfDisposed();
-        throwIfReadOnly();
-
-        flushRelationships();
-
-        this.partList.values().forEach(p -> {
-            if (!p.isRelationshipPart()) {
-                p.flushRelationships();
-            }
-            p.flush();
-        });
-
-        flushCore();
-    }
-
     /////////////////////////////////////////////////////////////////// private methods
 
     private void ensureRelationships() {
@@ -293,4 +305,17 @@ public abstract class Package implements Closeable {
      * This method flushes the contents of the package to the disc.
      */
     protected abstract void flushCore();
+
+    protected void dispose(boolean disposing) {
+        if (!disposed && disposing) {
+            this.partList.clear();
+            if (packageProperties != null) {
+                packageProperties.close();
+                packageProperties = null;
+            }
+            this.partList = null;
+            this.relationships = null;
+            this.disposed = true;
+        }
+    }
 }

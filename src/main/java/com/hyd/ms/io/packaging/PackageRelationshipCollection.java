@@ -8,10 +8,10 @@ import com.hyd.utilities.FilteredIterable;
 public class PackageRelationshipCollection extends FilteredIterable<PackageRelationship> {
 
     public PackageRelationshipCollection(InternalRelationshipCollection relationships, String filter) {
-        super(relationships.getRelationshipIterator(), r -> r.getRelationshipType().equals(filter));
+        super(relationships.getRelationshipIterable().iterator(), r -> r.getRelationshipType().equals(filter));
     }
 
     public PackageRelationshipCollection(InternalRelationshipCollection relationships) {
-        super(relationships.getRelationshipIterator(), r -> true);
+        super(relationships.getRelationshipIterable().iterator(), r -> true);
     }
 }

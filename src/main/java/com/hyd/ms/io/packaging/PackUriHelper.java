@@ -162,5 +162,10 @@ public class PackUriHelper {
         public String partUriExtension() {
             return StringUtils.defaultString(StringUtils.substringAfterLast(this.normalized, "."), "");
         }
+
+        @Override
+        public String toString() {
+            return normalized;
+        }
     }
 }

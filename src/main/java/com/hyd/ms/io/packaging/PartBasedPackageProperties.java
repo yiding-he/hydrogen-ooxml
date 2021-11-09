@@ -2,7 +2,6 @@ package com.hyd.ms.io.packaging;
 
 import com.hyd.ms.io.packaging.PackUriHelper.ValidatedPartUri;
 
-import java.io.IOException;
 import java.util.UUID;
 
 public class PartBasedPackageProperties extends PackageProperties {
@@ -29,7 +28,7 @@ public class PartBasedPackageProperties extends PackageProperties {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         flush();
     }
 

@@ -40,4 +40,8 @@ public abstract class PackageProperties implements Closeable {
 
     private String version;
 
+    @Override
+    public void close() {
+        // nothing to do
+    }
 }
