@@ -1,6 +1,9 @@
 package com.hyd.ooxml;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public abstract class OpenXmlElementList implements Iterable<OpenXmlElement> {
 
@@ -20,4 +23,8 @@ public abstract class OpenXmlElementList implements Iterable<OpenXmlElement> {
             };
         }
     };
+
+    public List<OpenXmlElement> toList() {
+        return StreamSupport.stream(this.spliterator(), false).collect(Collectors.toList());
+    }
 }

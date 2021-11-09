@@ -28,7 +28,7 @@ public class MemoryStream extends Stream {
 
     @Override
     public InputStream read() {
-        return new ByteArrayInputStream(this.data.getBuf());
+        return new ByteArrayInputStream(this.data.toByteArray());
     }
 
     @Override

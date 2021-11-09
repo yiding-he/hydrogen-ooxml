@@ -18,7 +18,9 @@ public abstract class OpenXmlCompositeElement extends OpenXmlElement {
 
     @Override
     protected void writeContentTo(XmlBuilder xmlBuilder) {
+        XmlBuilder.XmlBuilderElement currentElement = xmlBuilder.getCurrentElement();
         for (OpenXmlElement childElement : getChildElements()) {
+            xmlBuilder.setCurrentElement(currentElement);
             childElement.writeTo(xmlBuilder);
         }
     }

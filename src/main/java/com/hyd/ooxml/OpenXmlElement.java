@@ -42,7 +42,7 @@ public abstract class OpenXmlElement implements Iterable<OpenXmlElement> {
         return getNext();
     }
 
-    public void append(Iterable<OpenXmlElement> children) {
+    public void appendIterable(Iterable<OpenXmlElement> children) {
         Assert.notNull(children, "children");
         for (OpenXmlElement child : children) {
             appendChild(child);
@@ -50,7 +50,7 @@ public abstract class OpenXmlElement implements Iterable<OpenXmlElement> {
     }
 
     public void append(OpenXmlElement... children) {
-        append(Arrays.asList(children));
+        appendIterable(Arrays.asList(children));
     }
 
     @Override
@@ -158,20 +158,18 @@ public abstract class OpenXmlElement implements Iterable<OpenXmlElement> {
     }
 
     public void writeTo(XmlBuilder builder) {
-        XmlBuilder.XmlBuilderElement parent = builder.getCurrentElement();
-        XmlBuilder.XmlBuilderElement child = builder.appendChild(parent, getXmlTagName());
+        XmlBuilder.XmlBuilderElement parentElement = builder.getCurrentElement();
+        XmlBuilder.XmlBuilderElement thisElement = builder.appendChild(parentElement, getXmlTagName());
 
         for (OpenXmlAttribute attribute : attributes()) {
-            child.addAttribute(attribute);
+            thisElement.addAttribute(attribute);
         }
 
         if (hasChildren() || !getInnerText().isEmpty()) {
-            builder.setCurrentElement(child);
+            builder.setCurrentElement(thisElement);
             writeContentTo(builder);
         }
     }
-
-
 
     protected String getXmlTagName() {
         String prefix = getPrefix();

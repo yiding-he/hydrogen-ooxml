@@ -34,7 +34,7 @@ public abstract class OpenXmlPartRootElement extends OpenXmlCompositeElement {
         writeTo(stream);
     }
 
-    private void writeTo(Stream stream) {
+    protected void writeTo(Stream stream) {
 
         XmlBuilder builder = new XmlBuilder(stream);
         XmlBuilder.XmlBuilderElement root = builder.createRoot(getXmlTagName());
