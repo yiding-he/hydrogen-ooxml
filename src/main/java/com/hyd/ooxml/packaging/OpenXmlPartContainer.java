@@ -69,6 +69,16 @@ public abstract class OpenXmlPartContainer {
         return addPartFrom(subPart, rId, true);
     }
 
+    public <T extends OpenXmlPart> T getSubPartOfType(Class<T> type) {
+        return getPartsOfType(type).iterator().next();
+    }
+
+    public <T extends OpenXmlPart> Iterable<T> getPartsOfType(Class<T> type) {
+        return childrenPartsDictionary.values().stream()
+            .filter(p -> type.isAssignableFrom(p.getClass()))
+            .map(p -> (T) p)::iterator;
+    }
+
     protected OpenXmlPart addPartFrom(OpenXmlPart subPart, String rId, boolean validateConstraints) {
 
         if (subPart.getOpenXmlPackage() == getInternalOpenXmlPackage()) {
@@ -187,9 +197,25 @@ public abstract class OpenXmlPartContainer {
         }
     }
 
-    private OpenXmlPart createPartCore(String relationshipType) {
-        log.warn("We need implement {}.createPartCore()", getClass().getCanonicalName());
-        return new ExtendedPart(relationshipType);
+    protected OpenXmlPart createPartCore(String relationshipType) {
+
+        Class<? extends OpenXmlPart> partClass = OpenXmlPartHelper
+            .searchOpenXmlPartTypes("com.hyd.ooxml.generated.packaging")
+            .stream()
+            .filter(c -> c.isAnnotationPresent(RelationshipType.class) && c.getAnnotation(RelationshipType.class).value().equals(relationshipType))
+            .findFirst().orElse(null);
+
+        if (partClass == null) {
+            log.warn("OpenXmlPart sub class undefined for relationship type {}", relationshipType);
+            return new ExtendedPart(relationshipType);
+        } else {
+            try {
+                log.debug("{} instance created with relationship type '{}'", partClass.getCanonicalName(), relationshipType);
+                return partClass.newInstance();
+            } catch (Exception e) {
+                throw new OpenXmlPackageException(e);
+            }
+        }
     }
 
     private OpenXmlPart addSubPartFromOtherPackage(OpenXmlPart part, boolean keepIdAndUri, String rId) {
@@ -332,7 +358,7 @@ public abstract class OpenXmlPartContainer {
                         }
                     }
                 } else {
-                    ExternalRelationship extRel = new ExternalRelationship(rel.getTargetUri(),rel.getRelationshipType(), rel.getId());
+                    ExternalRelationship extRel = new ExternalRelationship(rel.getTargetUri(), rel.getRelationshipType(), rel.getId());
                     extRel.setContainer(this);
                     referenceRelationships.add(extRel);
                 }

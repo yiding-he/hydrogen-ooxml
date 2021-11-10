@@ -45,6 +45,10 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
         }
     }
 
+    public OpenXmlPart getRootPart() {
+        throw new UnsupportedOperationException("not implemented by " + getClass());
+    }
+
     private void load(Package __package) {
         PackageRelationshipPropertyCollection relationshipCollection = new PackageRelationshipPropertyCollection(__package);
 

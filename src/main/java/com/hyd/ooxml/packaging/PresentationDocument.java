@@ -90,6 +90,11 @@ public class PresentationDocument extends OpenXmlPackage {
         return doc;
     }
 
+    @Override
+    public OpenXmlPart getRootPart() {
+        return getSubPartOfType(PresentationPart.class);
+    }
+
     ///////////////////////////////////////////////////////////////////
 
     private void updateDocumentTypeFromContentType() {

@@ -15,7 +15,7 @@ import java.util.Map;
 
 public abstract class OpenXmlPart extends OpenXmlPartContainer {
 
-    private static final String DEFAULT_TARGET_EXT = "xml";
+    public static final String DEFAULT_TARGET_EXT = "xml";
 
     private OpenXmlPackage openXmlPackage;
 
@@ -95,6 +95,18 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
      */
     protected OpenXmlPartRootElement getPartRootElement() {
         return null;
+    }
+
+    protected <T extends OpenXmlPartRootElement> void loadDomTree(Class<T> type) {
+        Assert.that(getInternalRootElement() == null, "DOM tree already loaded");
+        try {
+            T rootElement = type.newInstance();
+            rootElement.loadFromPart(this, getStream());
+            rootElement.setOpenXmlPart(this);
+            setInternalRootElement(rootElement);
+        } catch (Exception e) {
+            throw new OpenXmlPackageException(e);
+        }
     }
 
     public void createInternal(
@@ -181,6 +193,14 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
         return getClass().getAnnotation(XmlPart.class).targetName();
     }
 
+    protected String getTargetFileExtension() {
+        if (getClass().isAnnotationPresent(XmlPart.class)) {
+            return getClass().getAnnotation(XmlPart.class).targetExtension();
+        } else {
+            return DEFAULT_TARGET_EXT;
+        }
+    }
+
     public String getRelationshipType() {
         ensureAnnotated(RelationshipType.class);
         return getClass().getAnnotation(RelationshipType.class).value();
@@ -204,12 +224,6 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
     protected PackageRelationship createRelationship(
         URI targetUri, TargetMode targetMode, String relationshipType, String id) {
         return packagePart.createRelationship(targetUri, targetMode, relationshipType, id);
-    }
-
-    ////////////////////////// target path and file name
-
-    protected String getTargetFileExtension() {
-        return DEFAULT_TARGET_EXT;
     }
 
     //////////////////////////

@@ -12,4 +12,6 @@ public @interface XmlPart {
     String targetName();
 
     String targetPath();
+
+    String targetExtension() default OpenXmlPart.DEFAULT_TARGET_EXT;
 }
