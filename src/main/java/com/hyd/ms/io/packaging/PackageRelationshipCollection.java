@@ -14,4 +14,8 @@ public class PackageRelationshipCollection extends FilteredIterable<PackageRelat
     public PackageRelationshipCollection(InternalRelationshipCollection relationships) {
         super(relationships.getRelationshipIterable().iterator(), r -> true);
     }
+
+    public boolean isEmpty() {
+        return !iterator().hasNext();
+    }
 }

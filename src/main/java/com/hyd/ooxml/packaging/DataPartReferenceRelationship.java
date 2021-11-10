@@ -14,13 +14,13 @@ public class DataPartReferenceRelationship extends ReferenceRelationship {
         DataPartReferenceRelationship dataPartReferenceRelationship;
         switch (relationshipType) {
             case MediaReferenceRelationship.RELATIONSHIP_TYPE:
-                dataPartReferenceRelationship = new MediaReferenceRelationship((MediaDataPart)dataPart, id);
+                dataPartReferenceRelationship = new MediaReferenceRelationship((MediaDataPart) dataPart, id);
                 break;
             case AudioReferenceRelationship.RELATIONSHIP_TYPE:
-                dataPartReferenceRelationship = new AudioReferenceRelationship((MediaDataPart)dataPart, id);
+                dataPartReferenceRelationship = new AudioReferenceRelationship((MediaDataPart) dataPart, id);
                 break;
             case VideoReferenceRelationship.RELATIONSHIP_TYPE:
-                dataPartReferenceRelationship = new VideoReferenceRelationship((MediaDataPart)dataPart, id);
+                dataPartReferenceRelationship = new VideoReferenceRelationship((MediaDataPart) dataPart, id);
                 break;
             default:
                 throw new IllegalArgumentException("relationshipType is out of range");
@@ -36,6 +36,17 @@ public class DataPartReferenceRelationship extends ReferenceRelationship {
     }
 
     private DataPart dataPart;
+
+    public static boolean isDataPartReferenceRelationship(String relationshipType) {
+        switch (relationshipType) {
+            case MediaReferenceRelationship.RELATIONSHIP_TYPE:
+            case AudioReferenceRelationship.RELATIONSHIP_TYPE:
+            case VideoReferenceRelationship.RELATIONSHIP_TYPE:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     public DataPart getDataPart() {
         return dataPart;

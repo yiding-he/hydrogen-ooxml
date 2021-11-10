@@ -69,6 +69,10 @@ public abstract class PackagePart {
         return createRelationship(targetUri, targetMode, relationshipType, null);
     }
 
+    public PackageRelationshipCollection getRelationships() {
+        return new PackageRelationshipCollection(relationships, null);
+    }
+
     public void close() {
         // nothing need to do
     }

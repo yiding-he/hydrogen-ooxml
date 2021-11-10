@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
+import java.util.Map;
 
 public abstract class OpenXmlPart extends OpenXmlPartContainer {
 
@@ -23,6 +24,12 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
     private URI uri;
 
     //////////////////////////
+
+    public void load(
+        OpenXmlPackage openXmlPackage, OpenXmlPart parent, URI targetUri, String id,
+        Map<URI, OpenXmlPart> loadedParts) {
+        // todo implement OpenXmlPart.load()
+    }
 
     public OpenXmlPackage getOpenXmlPackage() {
         return openXmlPackage;

@@ -1,18 +1,21 @@
 package com.hyd.ooxml.packaging;
 
 import com.hyd.ms.io.Stream;
+import com.hyd.ms.io.packaging.PackUriHelper;
+import com.hyd.ms.io.packaging.PackagePart;
 import com.hyd.ms.io.packaging.PackageRelationship;
 import com.hyd.ms.io.packaging.TargetMode;
+import com.hyd.ooxml.framework.PackageCache;
+import com.hyd.ooxml.framework.PartConstraintRule;
 import com.hyd.utilities.assertion.Assert;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @SuppressWarnings("unchecked")
+@Slf4j
 public abstract class OpenXmlPartContainer {
 
     protected final Map<String, OpenXmlPart> childrenPartsDictionary = new TreeMap<>();
@@ -20,6 +23,12 @@ public abstract class OpenXmlPartContainer {
     protected final LinkedList<ReferenceRelationship> referenceRelationships = new LinkedList<>();
 
     protected Object annotations;
+
+    protected OpenXmlPartData data;
+
+    {
+        data = PackageCache.getInstance().parsePartData(this);
+    }
 
     public LinkedList<ReferenceRelationship> getReferenceRelationshipList() {
         return referenceRelationships;
@@ -34,21 +43,21 @@ public abstract class OpenXmlPartContainer {
     public Iterable<ExternalRelationship> getExternalRelationships() {
         return getReferenceRelationshipList().stream()
             .filter(r -> r instanceof ExternalRelationship)
-            .map(r -> (ExternalRelationship)r)
+            .map(r -> (ExternalRelationship) r)
             ::iterator;
     }
 
     public Iterable<HyperlinkRelationship> getHyperlinkRelationships() {
         return getReferenceRelationshipList().stream()
             .filter(r -> r instanceof HyperlinkRelationship)
-            .map(r -> (HyperlinkRelationship)r)
+            .map(r -> (HyperlinkRelationship) r)
             ::iterator;
     }
 
     public Iterable<DataPartReferenceRelationship> getDataPartReferenceRelationships() {
         return getReferenceRelationshipList().stream()
             .filter(r -> r instanceof DataPartReferenceRelationship)
-            .map(r -> (DataPartReferenceRelationship)r)
+            .map(r -> (DataPartReferenceRelationship) r)
             ::iterator;
     }
 
@@ -56,21 +65,48 @@ public abstract class OpenXmlPartContainer {
         return (T) addPartFrom(part, id);
     }
 
-    private OpenXmlPart addPartFrom(OpenXmlPart subPart, String id) {
+    protected OpenXmlPart addPartFrom(OpenXmlPart subPart, String rId) {
+        return addPartFrom(subPart, rId, true);
+    }
+
+    protected OpenXmlPart addPartFrom(OpenXmlPart subPart, String rId, boolean validateConstraints) {
+
         if (subPart.getOpenXmlPackage() == getInternalOpenXmlPackage()) {
             if (isChildPart(subPart)) {
                 String idOfPart = getIdOfPart(subPart);
-                if (!id.equals(idOfPart)) {
-                    throw new IllegalArgumentException("subPart already has another relationship id");
+                if (!rId.equals(idOfPart)) {
+                    throw new IllegalArgumentException("subPart already has another relationship rId");
                 } else {
                     return subPart;
                 }
             }
         }
 
-        // TODO add PartConstraints validation here
+        if (validateConstraints) {
+            String relType = subPart.getRelationshipType();
+            if (!data.getPartConstraints().containsRelationship(relType)) {
+                Assert.that(subPart instanceof ExtendedPart,
+                    "The part of relationship type '%s' cannot be added here", relType);
+            } else {
+                PartConstraintRule rule = data.getPartConstraints().getConstrainRule(relType);
+                Assert.that(rule.matchContentType(subPart.getContentType()),
+                    "The part of relationship type '%s' cannot be added here", relType);
 
-        return addSubPart(subPart, id);
+                if (!rule.isMaxOccursGreaterThanOne()) {
+                    Assert.that(getSubPart(relType) == null,
+                        "Only one instance of relationship type '%s' is allowed for this parent", relType);
+                }
+            }
+        }
+
+        return addSubPart(subPart, rId);
+    }
+
+    public OpenXmlPart getSubPart(String relationshipType) {
+        Assert.notNull(relationshipType, "relationshipType");
+        return childrenPartsDictionary.values().stream()
+            .filter(p -> p.getRelationshipType().equals(relationshipType))
+            .findFirst().orElse(null);
     }
 
     public <T extends OpenXmlPart> T addNewPart(Class<T> type, String id) {
@@ -142,8 +178,18 @@ public abstract class OpenXmlPartContainer {
     }
 
     private OpenXmlPart createOpenXmlPart(String relationshipType) {
-        throw new UnsupportedOperationException("Not implemented yet");
-        // TODO implement com.hyd.ooxml.packaging.OpenXmlPartContainer.createOpenXmlPart()
+        Assert.notNull(relationshipType, "relationshipType");
+
+        if (data.getPartConstraints().containsRelationship(relationshipType)) {
+            return createPartCore(relationshipType);
+        } else {
+            return new ExtendedPart(relationshipType);
+        }
+    }
+
+    private OpenXmlPart createPartCore(String relationshipType) {
+        log.warn("We need implement {}.createPartCore()", getClass().getCanonicalName());
+        return new ExtendedPart(relationshipType);
     }
 
     private OpenXmlPart addSubPartFromOtherPackage(OpenXmlPart part, boolean keepIdAndUri, String rId) {
@@ -245,11 +291,53 @@ public abstract class OpenXmlPartContainer {
     }
 
     protected void loadReferencedPartsAndRelationships(
-        OpenXmlPackage openXmlPackage, OpenXmlPart openXmlPart,
+        OpenXmlPackage openXmlPackage, OpenXmlPart sourcePart,
         PackageRelationshipPropertyCollection relationshipCollection, Map<URI, OpenXmlPart> loadedParts
     ) {
-        throw new UnsupportedOperationException("Not implemented yet");
-        // TODO implement com.hyd.ooxml.packaging.OpenXmlPackage.loadReferencedPartsAndRelationships()
+        for (RelationshipProperty rel : relationshipCollection) {
+            if (rel.getRelationshipType().equals(HyperlinkRelationship.RELATIONSHIP_TYPE_CONST)) {
+                HyperlinkRelationship hyperRel = new HyperlinkRelationship(
+                    rel.getTargetUri(), rel.getTargetMode() == TargetMode.External, rel.getId()
+                );
+                hyperRel.setContainer(this);
+                referenceRelationships.add(hyperRel);
+
+            } else {
+                if (rel.getTargetMode() == TargetMode.Internal) {
+                    if (!rel.getTargetUri().toString().equalsIgnoreCase("NULL")) {
+                        URI sourceUri = sourcePart == null ? URI.create("/") : sourcePart.getUri();
+                        URI targetUri = PackUriHelper.resolvePartUri(sourceUri, rel.getTargetUri());
+
+                        if (loadedParts.containsKey(targetUri)) {
+                            OpenXmlPart child = loadedParts.get(targetUri);
+                            Assert.that(Objects.equals(child.getRelationshipType(), rel.getRelationshipType()),
+                                "A shared part is referenced by multiple source parts with a different relationship type: %s", targetUri);
+                            childrenPartsDictionary.put(rel.getId(), child);
+
+                        } else if (DataPartReferenceRelationship.isDataPartReferenceRelationship(rel.getRelationshipType())) {
+                            DataPart dataPart = openXmlPackage.findDataPart(targetUri);
+                            if (dataPart == null) {
+                                PackagePart packagePart = openXmlPackage.__package.getPart(targetUri);
+                                dataPart = new MediaDataPart(openXmlPackage, packagePart);
+                                openXmlPackage.addDataPartToList(dataPart);
+                            }
+                            DataPartReferenceRelationship dataRel = DataPartReferenceRelationship.create(this, dataPart, rel.getRelationshipType(), rel.getId());
+                            referenceRelationships.add(dataRel);
+
+                        } else {
+                            OpenXmlPart child = createOpenXmlPart(rel.getRelationshipType());
+                            loadedParts.put(targetUri, child);
+                            child.load(openXmlPackage, sourcePart, targetUri, rel.getId(), loadedParts);
+                            childrenPartsDictionary.put(rel.getId(), child);
+                        }
+                    }
+                } else {
+                    ExternalRelationship extRel = new ExternalRelationship(rel.getTargetUri(),rel.getRelationshipType(), rel.getId());
+                    extRel.setContainer(this);
+                    referenceRelationships.add(extRel);
+                }
+            }
+        }
     }
 
     ///////////////////////////////////////////////////////////////////

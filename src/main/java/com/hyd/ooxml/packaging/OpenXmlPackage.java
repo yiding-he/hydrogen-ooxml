@@ -260,6 +260,12 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
         return ApplicationType.None;
     }
 
+    public DataPart findDataPart(URI uri) {
+        return dataPartList.stream()
+            .filter(p -> p.getUri().equals(uri))
+            .findFirst().orElse(null);
+    }
+
     ///////////////////////////////////////////////////////////////////
 
     protected abstract OpenXmlPackage createClone(Stream stream);

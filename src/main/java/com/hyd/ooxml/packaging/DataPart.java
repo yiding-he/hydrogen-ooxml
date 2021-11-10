@@ -2,6 +2,7 @@ package com.hyd.ooxml.packaging;
 
 import com.hyd.ms.io.Stream;
 import com.hyd.ms.io.packaging.PackagePart;
+import com.hyd.utilities.assertion.Assert;
 import lombok.Getter;
 
 import java.net.URI;
@@ -24,6 +25,18 @@ public class DataPart {
         this.openXmlPackage = openXmlPackage;
         this.uri = openXmlPackage.getUniquePartUri(contentType, URI.create("/"), partUri);
         this.metroPart = openXmlPackage.createMetroPart(this.uri, contentType);
+    }
+
+    public DataPart(OpenXmlPackage openXmlPackage, PackagePart packagePart) {
+        Assert.that(openXmlPackage.__package.getPart(packagePart.getUri().getUri()) == packagePart,
+            "argument packagePart should belong to argument openXmlPackage");
+
+        this.openXmlPackage = openXmlPackage;
+        this.metroPart = packagePart;
+        this.uri = packagePart.getUri().getUri();
+
+        Assert.that(this.metroPart.getRelationships().isEmpty(),
+            "Media (Audio, Video) parts should not reference any other parts");
     }
 
     public String getContentType() {
