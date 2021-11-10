@@ -125,6 +125,10 @@ public class PackUriHelper {
             return uri;
         }
 
+        public String getNormalized() {
+            return normalized;
+        }
+
         @Override
         public int compareTo(ValidatedPartUri o) {
             return this.normalized.compareTo(o.normalized);
@@ -165,7 +169,7 @@ public class PackUriHelper {
 
         @Override
         public String toString() {
-            return normalized;
+            return this.uri.toString();
         }
     }
 }

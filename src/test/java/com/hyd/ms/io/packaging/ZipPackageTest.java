@@ -44,17 +44,13 @@ class ZipPackageTest {
 
     @Test
     public void testOpenFile() throws Exception {
-        ZipPackage zipPackage = new ZipPackage("target/1.pptx", FileMode.Open, FileAccess.Read);
+        ZipPackage zipPackage = new ZipPackage("src/test/resources/simple-create-by-ms-office.pptx", FileMode.Open, FileAccess.Read);
 
         PackagePart[] packageParts = zipPackage.getPartsCore();
         System.out.println("packageParts.length = " + packageParts.length);
         for (PackagePart part : packageParts) {
             System.out.println(part.getUri() + " - " + part.getContentType());
         }
-
-        String slideMasterUri = "/ppt/slideLayouts/slideMasters/slideMaster1.xml";
-        PackagePart part = zipPackage.getPart(URI.create(slideMasterUri));
-        System.out.println(part);
 
         zipPackage.close();
     }

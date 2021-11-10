@@ -77,7 +77,7 @@ public class InternalRelationshipCollection {
         );
 
         Document doc = Xml.parseDocumentAndClose(relationshipPart.getStream().read());
-        Xml.lookupElements(doc.getDocumentElement(), "Relationship").forEach(rel -> {
+        Xml.lookupElements(doc.getDocumentElement(), "*[local-name()='Relationship']").forEach(rel -> {
             final String id = rel.getAttribute("Id");
             final String type = rel.getAttribute("Type");
             final String target = rel.getAttribute("Target");

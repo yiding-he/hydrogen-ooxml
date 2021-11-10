@@ -14,12 +14,28 @@ import java.util.TreeMap;
 
 public abstract class Package implements Closeable {
 
-    public static Package open(String path, FileMode packageMode, FileAccess packageAccess, FileShare packageShare) {
-        return new ZipPackage(path, packageMode, packageAccess);
+    public static Package open(Stream stream, FileMode packageMode, FileAccess packageAccess) {
+        return init(new ZipPackage(stream, packageMode, packageAccess));
     }
 
-    public static Package open(Stream stream, FileMode packageMode, FileAccess packageAccess) {
-        return new ZipPackage(stream, packageMode, packageAccess);
+    public static Package open(String path, FileMode packageMode, FileAccess packageAccess, FileShare packageShare) {
+        return init(new ZipPackage(path, packageMode, packageAccess));
+    }
+
+    private static Package init(Package createdPackage) {
+
+        // We need to get all the parts if any exists from the underlying file
+        // so that we have the names in the Normalized form in our in-memory
+        // data structures.
+        // Note: If ever this call is removed, each individual call to GetPartCore,
+        // may result in undefined behavior as the underlying ZipArchive, maintains the
+        // files list as being case-sensitive.
+        FileAccess openAccess = createdPackage.getFileOpenAccess();
+        if (openAccess == FileAccess.ReadWrite || openAccess == FileAccess.Read) {
+            createdPackage.getParts();
+        }
+
+        return createdPackage;
     }
 
     /////////////////////////////////////////////////////////////////// members
@@ -31,6 +47,8 @@ public abstract class Package implements Closeable {
     private InternalRelationshipCollection relationships;
 
     private PackageProperties packageProperties;
+
+    private PackagePartCollection partCollection;
 
     private boolean disposed = false;
 
@@ -138,6 +156,31 @@ public abstract class Package implements Closeable {
         // Set the entry for this Uri with the actual part
         this.partList.put(validatedPartUri, addedPart);
         return addedPart;
+    }
+
+    public PackagePartCollection getParts() {
+        throwIfDisposed();
+        throwIfWriteOnly();
+
+        if (partCollection == null) {
+            PackagePart[] parts = getPartsCore();
+            TreeMap<ValidatedPartUri, PackagePart> seenPartUris = new TreeMap<>();
+
+            for (PackagePart part : parts) {
+                ValidatedPartUri partUri = part.getUri();
+                if (seenPartUris.containsKey(partUri)) {
+                    throw new IllegalStateException("Duplicate part uri found: " + partUri);
+                } else {
+                    seenPartUris.put(partUri, part);
+                }
+                if (!partList.containsKey(partUri)) {
+                    addIfNoPrefixCollisionDetected(partUri, part);
+                }
+            }
+
+            partCollection = new PackagePartCollection(seenPartUris);
+        }
+        return partCollection;
     }
 
     public PackagePart getPart(URI partUri) {

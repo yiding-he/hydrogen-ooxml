@@ -8,7 +8,7 @@ import com.hyd.ooxml.generated.packaging.*;
 import com.hyd.ooxml.generated.presentation.*;
 import org.junit.jupiter.api.Test;
 
-class PresentationDocumentTest {
+class TestCreatePresentationDocument {
 
     @Test
     void create() {
