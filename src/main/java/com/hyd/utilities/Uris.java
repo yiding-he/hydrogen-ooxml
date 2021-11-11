@@ -27,6 +27,15 @@ public class Uris {
         }
     }
 
+    public static String getParent(String uri) {
+        int lastSlash = StringUtils.lastIndexOf(uri, "/");
+        if (lastSlash < 0) {
+            return "/";
+        } else {
+            return StringUtils.substringBefore(uri, lastSlash);
+        }
+    }
+
     public static String combine(String...  fragments) {
         return String.join("/", fragments);
     }

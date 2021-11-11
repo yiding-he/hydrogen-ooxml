@@ -64,9 +64,13 @@ public class InternalRelationshipCollection {
             part == null ? PackUriHelper.PACKAGE_ROOT_URI : sourcePart.getUri().getUri()
         );
         if (__package.partExists(this.uri)) {
+            log.debug("Relationship part {} found", this.uri);
             this.relationshipPart = __package.getPart(this.uri);
             parseRelationshipPart(this.relationshipPart);
+        } else {
+            log.debug("Relationship part {} not found", this.uri);
         }
+        log.debug("{} relationships found from {}", this.relationships.size(), this.uri);
     }
 
     private void parseRelationshipPart(PackagePart relationshipPart) {

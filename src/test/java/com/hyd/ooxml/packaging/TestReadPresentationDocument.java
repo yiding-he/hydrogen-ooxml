@@ -1,25 +1,20 @@
 package com.hyd.ooxml.packaging;
 
-import com.hyd.ms.io.MemoryStream;
-import com.hyd.ooxml.generated.packaging.PresentationPart;
-import com.hyd.ooxml.generated.presentation.Presentation;
 import org.junit.jupiter.api.Test;
 
 class TestReadPresentationDocument {
 
+    // String path = "src/test/resources/simple-create-by-ms-office.pptx";
+    public static final String PATH = "F:\\Projects\\ZnXunzhi\\ajia-base\\xz-ooxml\\samples\\multi-pages.pptx";
+
     @Test
-    public void testReadPptx() throws Exception {
-        PresentationDocument presentationDocument = PresentationDocument.open(
-            "src/test/resources/simple-create-by-ms-office.pptx", false
-        );
+    public void testListAllParts() {
+        PresentationDocument presentationDocument = PresentationDocument.open(PATH, false);
 
-
-
-        PresentationPart presentationPart = (PresentationPart) presentationDocument.getRootPart();
-        Presentation presentation = presentationPart.getPresentation();
-
-        MemoryStream stream = new MemoryStream();
-        presentation.writeTo(stream);
-        System.out.println(stream);
+        System.out.println("///////////////////////////////////////////////////////////////////");
+        for (OpenXmlPart part : presentationDocument.getAllParts()) {
+            System.out.println("PART: " + part.getUri());
+        }
+        System.out.println("///////////////////////////////////////////////////////////////////");
     }
 }

@@ -48,12 +48,10 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
         this.packagePart = openXmlPackage.__package.getPart(targetUri);
 
         openXmlPackage.reserveUri(getContentType(), getUri());
-
-
         loadDomTree(getRootElementType());
 
-        loadReferencedPartsAndRelationships(
-            openXmlPackage, this, new PackagePartRelationshipPropertyCollection(getPackagePart()), loadedParts);
+        PackagePartRelationshipPropertyCollection rels = new PackagePartRelationshipPropertyCollection(getPackagePart());
+        loadReferencedPartsAndRelationships(openXmlPackage, this, rels, loadedParts);
     }
 
     public PackagePart getPackagePart() {
@@ -123,7 +121,7 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
      * @return null if the part is not a defined XML part.
      */
     protected OpenXmlPartRootElement getPartRootElement() {
-        return null;
+        return getInternalRootElement();
     }
 
     protected <T extends OpenXmlPartRootElement> void loadDomTree(Class<T> type) {

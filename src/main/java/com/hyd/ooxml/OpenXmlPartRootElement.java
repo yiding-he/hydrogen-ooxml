@@ -34,6 +34,10 @@ public abstract class OpenXmlPartRootElement {
         }
     }
 
+    public Document getContent() {
+        return content;
+    }
+
     private void save(Stream stream) {
         writeTo(stream);
     }
@@ -55,6 +59,7 @@ public abstract class OpenXmlPartRootElement {
         // It is way too much of a burden to write building process for every XML element by myself.
         // So this is it, and I will use DOM instead.
         try {
+            log.debug("Parsing XML content of {}", openXmlPart.getUri());
             this.content = Xml.parseDocumentAndClose(stream.read());
         } catch (Exception e) {
             log.error("part contains invalid XML, uri={}, contentType={}", openXmlPart.getUri(), openXmlPart.getContentType());

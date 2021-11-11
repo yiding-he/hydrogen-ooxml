@@ -206,11 +206,10 @@ public abstract class OpenXmlPartContainer {
             .findFirst().orElse(null);
 
         if (partClass == null) {
-            log.warn("OpenXmlPart sub class undefined for relationship type {}", relationshipType);
-            return new ExtendedPart(relationshipType);
+            log.warn("Relationship type {} is undefined", relationshipType);
+            return new UndefinedPart(relationshipType);
         } else {
             try {
-                log.debug("{} instance created with relationship type '{}'", partClass.getCanonicalName(), relationshipType);
                 return partClass.newInstance();
             } catch (Exception e) {
                 throw new OpenXmlPackageException(e);
@@ -320,6 +319,10 @@ public abstract class OpenXmlPartContainer {
         OpenXmlPackage openXmlPackage, OpenXmlPart sourcePart,
         RelationshipCollection relationshipCollection, Map<URI, OpenXmlPart> loadedParts
     ) {
+        log.debug("Parsing relationships of {}, with {} relationships",
+            (sourcePart == null? null: sourcePart.getUri())
+            , relationshipCollection.size());
+
         for (RelationshipProperty rel : relationshipCollection) {
             if (rel.getRelationshipType().equals(HyperlinkRelationship.RELATIONSHIP_TYPE_CONST)) {
                 HyperlinkRelationship hyperRel = new HyperlinkRelationship(
