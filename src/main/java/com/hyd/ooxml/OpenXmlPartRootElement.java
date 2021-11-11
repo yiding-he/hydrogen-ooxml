@@ -5,7 +5,7 @@ import com.hyd.ooxml.packaging.OpenXmlPart;
 import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.Xml;
 import lombok.extern.slf4j.Slf4j;
-import org.w3c.dom.Document;
+import org.dom4j.Document;
 
 import java.nio.charset.StandardCharsets;
 

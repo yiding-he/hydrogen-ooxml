@@ -5,7 +5,7 @@ import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.Xml;
 import com.hyd.xml.XmlBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.w3c.dom.Document;
+import org.dom4j.Document;
 
 import java.net.URI;
 import java.util.TreeMap;
@@ -81,10 +81,10 @@ public class InternalRelationshipCollection {
         );
 
         Document doc = Xml.parseDocumentAndClose(relationshipPart.getStream().read());
-        Xml.lookupElements(doc.getDocumentElement(), "*[local-name()='Relationship']").forEach(rel -> {
-            final String id = rel.getAttribute("Id");
-            final String type = rel.getAttribute("Type");
-            final String target = rel.getAttribute("Target");
+        Xml.lookupElements(doc.getRootElement(), "*[local-name()='Relationship']").forEach(rel -> {
+            final String id = rel.attributeValue("Id");
+            final String type = rel.attributeValue("Type");
+            final String target = rel.attributeValue("Target");
             final TargetMode targetMode = TargetMode.fromRelationship(rel);
             add(PackUriHelper.uri(target), targetMode, type, id, true);
         });

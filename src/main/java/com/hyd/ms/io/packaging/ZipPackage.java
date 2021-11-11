@@ -11,8 +11,8 @@ import com.hyd.utilities.Uris;
 import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.Xml;
 import lombok.extern.slf4j.Slf4j;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.dom4j.Document;
+import org.dom4j.Element;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -235,12 +235,12 @@ public class ZipPackage extends Package {
             String xml = new String(contentTypeEntry.getContent(), StandardCharsets.UTF_8);
             Document doc = Xml.parseString(xml);
             Xml.lookupElements(doc, "/*[local-name()='Types']/*[local-name()='Default']").forEach(def -> {
-                addDefaultElement(def.getAttribute("Extension"), new ContentType(def.getAttribute("ContentType")));
+                addDefaultElement(def.attributeValue("Extension"), new ContentType(def.attributeValue("ContentType")));
             });
             Xml.lookupElements(doc, "/*[local-name()='Types']/*[local-name()='Override']").forEach(override ->
                 addOverrideElement(
-                    PackUriHelper.validatePartUri(override.getAttribute("PartName")),
-                    new ContentType(override.getAttribute("ContentType"))
+                    PackUriHelper.validatePartUri(override.attributeValue("PartName")),
+                    new ContentType(override.attributeValue("ContentType"))
                 )
             );
         }
@@ -251,23 +251,22 @@ public class ZipPackage extends Package {
             }
 
             Document document = Xml.newDocument();
-            document.setXmlStandalone(true);
 
-            Element types = document.createElementNS(CONTENT_TYPES_NS, "Types");
-            document.appendChild(types);
+            Element types = Xml.createElement(CONTENT_TYPES_NS, "Types");
+            document.add(types);
 
             defaultDictionary.forEach((extension, contentType) -> {
-                Element def = document.createElement("Default");
-                def.setAttribute("Extension", extension);
-                def.setAttribute("ContentType", contentType.getOriginalString());
-                types.appendChild(def);
+                Element def = Xml.createElement("Default");
+                def.addAttribute("Extension", extension);
+                def.addAttribute("ContentType", contentType.getOriginalString());
+                types.add(def);
             });
 
             overrideDictionary.forEach((uri, contentType) -> {
-                Element override = document.createElement("Override");
-                override.setAttribute("PartName", uri.getUri().toString());
-                override.setAttribute("ContentType", contentType.getOriginalString());
-                types.appendChild(override);
+                Element override = Xml.createElement("Override");
+                override.addAttribute("PartName", uri.getUri().toString());
+                override.addAttribute("ContentType", contentType.getOriginalString());
+                types.add(override);
             });
 
             byte[] bytes = Xml.toBytes(document);
