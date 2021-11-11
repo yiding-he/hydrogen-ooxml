@@ -1,24 +1,24 @@
 package com.hyd.ooxml;
 
 import com.hyd.ms.io.Stream;
-import com.hyd.ooxml.framework.metadata.OpenXmlAttribute;
 import com.hyd.ooxml.packaging.OpenXmlPart;
 import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.Xml;
-import com.hyd.xml.XmlBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.Document;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
-public abstract class OpenXmlPartRootElement extends OpenXmlCompositeElement {
+public abstract class OpenXmlPartRootElement {
+
+    public static class NONE extends OpenXmlPartRootElement {
+
+    }
 
     protected OpenXmlPart openXmlPart;
 
-    protected Document parsedContent;
+    protected Document content;
 
     public void save() {
         Assert.notNull(openXmlPart, "openXmlPart@" + getClass().getSimpleName());
@@ -38,33 +38,8 @@ public abstract class OpenXmlPartRootElement extends OpenXmlCompositeElement {
         writeTo(stream);
     }
 
-    protected void writeTo(Stream stream) {
-
-        XmlBuilder builder = new XmlBuilder(stream);
-        XmlBuilder.XmlBuilderElement root = builder.createRoot(getXmlTagName());
-
-        // gather all namespaces from descendants and apply them to root element
-        Set<OpenXmlNamespace> namespaces = new HashSet<>(Arrays.asList(getNamespaces()));
-
-        for (OpenXmlElement descendant : descendants()) {
-            namespaces.addAll(Arrays.asList(descendant.getNamespaces()));
-        }
-        for (OpenXmlNamespace namespace : namespaces) {
-            root.addNamespace(namespace);
-        }
-
-        for (OpenXmlAttribute attribute : attributes()) {
-            root.addAttribute(attribute);
-        }
-
-        if (hasChildren() || !getInnerText().isEmpty()) {
-            builder.setCurrentElement(root);
-            writeContentTo(builder);
-        } else {
-            log.debug("hasChildren: {}", hasChildren());
-        }
-
-        builder.finish();
+    public void writeTo(Stream stream) {
+        stream.writeBytes(Xml.toString(this.content, false).getBytes(StandardCharsets.UTF_8));
     }
 
     public OpenXmlPart getOpenXmlPart() {
@@ -79,6 +54,11 @@ public abstract class OpenXmlPartRootElement extends OpenXmlCompositeElement {
         // TODO implement com.hyd.ooxml.OpenXmlPartRootElement.loadFromPart()
         // It is way too much of a burden to write building process for every XML element by myself.
         // So this is it, and I will use DOM instead.
-        this.parsedContent = Xml.parseDocumentAndClose(stream.read());
+        try {
+            this.content = Xml.parseDocumentAndClose(stream.read());
+        } catch (Exception e) {
+            log.error("part contains invalid XML, uri={}, contentType={}", openXmlPart.getUri(), openXmlPart.getContentType());
+            throw e;
+        }
     }
 }

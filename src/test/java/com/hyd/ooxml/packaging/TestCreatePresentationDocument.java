@@ -1,11 +1,8 @@
 package com.hyd.ooxml.packaging;
 
-import com.hyd.ooxml.E;
-import com.hyd.ooxml.OpenXmlNamespace;
 import com.hyd.ooxml.PresentationDocumentType;
-import com.hyd.ooxml.generated.drawing.Theme;
-import com.hyd.ooxml.generated.packaging.*;
-import com.hyd.ooxml.generated.presentation.*;
+import com.hyd.ooxml.generated.packaging.PresentationPart;
+import com.hyd.ooxml.generated.presentation.Presentation;
 import org.junit.jupiter.api.Test;
 
 class TestCreatePresentationDocument {
@@ -16,11 +13,12 @@ class TestCreatePresentationDocument {
         PresentationPart presentationPart = presentationDoc.addPresentationPart();
         presentationPart.setPresentation(new Presentation());
 
-        createPresentationParts(presentationPart);
+        // createPresentationParts(presentationPart);
 
         presentationDoc.close();
     }
 
+/*
     private void createPresentationParts(PresentationPart presentationPart) {
 
         SlideMasterId slideMasterId = new SlideMasterId();
@@ -112,14 +110,6 @@ class TestCreatePresentationDocument {
         );
         themePart1.setTheme(theme);
         return themePart1;// TODO implement com.hyd.ooxml.packaging.PresentationDocumentTest.createTheme()
-    }
-
-    private E createSysClr() {
-        return new E("a:sysClr").attr("val", "infoText").children(
-            new E("a:red").attr("val", "100"),
-            new E("a:green").attr("val", "100"),
-            new E("a:blue").attr("val", "100")
-        );
     }
 
     private SlideMasterPart createSlideMasterPart(SlideLayoutPart slideLayoutPart1) {
@@ -268,5 +258,6 @@ class TestCreatePresentationDocument {
         slidePart1.setSlide(slide1);
         return slidePart1;
     }
+*/
 
 }

@@ -1,5 +1,8 @@
 package com.hyd.ooxml.packaging;
 
+import com.hyd.ooxml.generated.ExtendedPartRootElement;
+
+@XmlPart(targetPath = "udata", targetName = "data", targetExtension = "dat", rootElementType = ExtendedPartRootElement.class)
 public class ExtendedPart extends OpenXmlPart {
 
     private final String relationshipType;
@@ -11,21 +14,6 @@ public class ExtendedPart extends OpenXmlPart {
     @Override
     public String getRelationshipType() {
         return relationshipType;
-    }
-
-    @Override
-    protected String getTargetFileExtension() {
-        return ".dat";
-    }
-
-    @Override
-    public String getTargetPath() {
-        return "udata";
-    }
-
-    @Override
-    public String getTargetName() {
-        return "data";
     }
 
     @Override

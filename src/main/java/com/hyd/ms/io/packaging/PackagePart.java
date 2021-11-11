@@ -69,7 +69,14 @@ public abstract class PackagePart {
         return createRelationship(targetUri, targetMode, relationshipType, null);
     }
 
+    public void deleteRelationship(String id) {
+        Assert.notNull(id, "id");
+        ensureRelationships();
+        this.relationships.delete(id);
+    }
+
     public PackageRelationshipCollection getRelationships() {
+        ensureRelationships();
         return new PackageRelationshipCollection(relationships, null);
     }
 

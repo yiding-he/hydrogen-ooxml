@@ -7,12 +7,14 @@ import com.hyd.ms.io.packaging.TargetMode;
 import com.hyd.ooxml.ApplicationType;
 import com.hyd.ooxml.OpenXmlPartRootElement;
 import com.hyd.utilities.assertion.Assert;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.util.Map;
 
+@Slf4j
 public abstract class OpenXmlPart extends OpenXmlPartContainer {
 
     public static final String DEFAULT_TARGET_EXT = "xml";
@@ -23,12 +25,39 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
 
     private URI uri;
 
+    private OpenXmlPartRootElement rootElement;
+
     //////////////////////////
 
     public void load(
         OpenXmlPackage openXmlPackage, OpenXmlPart parent, URI targetUri, String id,
         Map<URI, OpenXmlPart> loadedParts) {
-        // todo implement OpenXmlPart.load()
+
+        Assert.notNull(targetUri, "targetUri");
+        Assert.notNull(id, "id");
+        Assert.not(openXmlPackage == null && parent == null, "argument openXmlPackage and argument parent cannot both be null");
+        Assert.not(openXmlPackage != null && parent != null && parent.getOpenXmlPackage() != openXmlPackage, "argument parent belongs to other package");
+
+        if (openXmlPackage == null && parent != null) {
+            openXmlPackage = parent.getOpenXmlPackage();
+        }
+        Assert.not(openXmlPackage == null, "cannot find value for argument openXmlPackage");
+
+        this.openXmlPackage = openXmlPackage;
+        this.uri = targetUri;
+        this.packagePart = openXmlPackage.__package.getPart(targetUri);
+
+        openXmlPackage.reserveUri(getContentType(), getUri());
+
+
+        loadDomTree(getRootElementType());
+
+        loadReferencedPartsAndRelationships(
+            openXmlPackage, this, new PackagePartRelationshipPropertyCollection(getPackagePart()), loadedParts);
+    }
+
+    public PackagePart getPackagePart() {
+        return packagePart;
     }
 
     public OpenXmlPackage getOpenXmlPackage() {
@@ -81,11 +110,11 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
     //////////////////////////
 
     protected OpenXmlPartRootElement getInternalRootElement() {
-        return null;
+        return this.rootElement;
     }
 
     protected void setInternalRootElement(OpenXmlPartRootElement rootElement) {
-        throw new UnsupportedOperationException();
+        this.rootElement = rootElement;
     }
 
     /**
@@ -99,6 +128,10 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
 
     protected <T extends OpenXmlPartRootElement> void loadDomTree(Class<T> type) {
         Assert.that(getInternalRootElement() == null, "DOM tree already loaded");
+        if (type == null || type == OpenXmlPartRootElement.NONE.class) {
+            // Non XML format
+            return;
+        }
         try {
             T rootElement = type.newInstance();
             rootElement.loadFromPart(this, getStream());
@@ -191,6 +224,11 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
     public String getTargetName() {
         ensureAnnotated(XmlPart.class);
         return getClass().getAnnotation(XmlPart.class).targetName();
+    }
+
+    public Class<? extends OpenXmlPartRootElement> getRootElementType() {
+        ensureAnnotated(XmlPart.class);
+        return getClass().getAnnotation(XmlPart.class).rootElementType();
     }
 
     protected String getTargetFileExtension() {

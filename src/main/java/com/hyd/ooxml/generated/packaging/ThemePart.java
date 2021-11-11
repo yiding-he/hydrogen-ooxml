@@ -7,7 +7,7 @@ import com.hyd.ooxml.packaging.OpenXmlPart;
 import com.hyd.ooxml.packaging.RelationshipType;
 import com.hyd.ooxml.packaging.XmlPart;
 
-@XmlPart(targetPath = "theme", targetName = "theme")
+@XmlPart(targetPath = "theme", targetName = "theme", rootElementType = Theme.class)
 @RelationshipType("http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme")
 @ContentType("application/vnd.openxmlformats-officedocument.theme+xml")
 public class ThemePart extends OpenXmlPart {

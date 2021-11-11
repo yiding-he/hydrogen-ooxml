@@ -270,6 +270,10 @@ public abstract class OpenXmlPackage extends OpenXmlPartContainer implements Clo
             .findFirst().orElse(null);
     }
 
+    public void reserveUri(String contentType, URI partUri) {
+        this.partUriHelper.reserveUri(contentType, partUri);
+    }
+
     ///////////////////////////////////////////////////////////////////
 
     protected abstract OpenXmlPackage createClone(Stream stream);

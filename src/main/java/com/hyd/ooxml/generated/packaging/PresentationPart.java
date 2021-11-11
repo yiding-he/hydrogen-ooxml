@@ -6,7 +6,7 @@ import com.hyd.ooxml.packaging.OpenXmlPart;
 import com.hyd.ooxml.packaging.RelationshipType;
 import com.hyd.ooxml.packaging.XmlPart;
 
-@XmlPart(targetPath = "ppt", targetName = "presentation")
+@XmlPart(targetPath = "ppt", targetName = "presentation", rootElementType = Presentation.class)
 @RelationshipType("http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument")
 public class PresentationPart extends OpenXmlPart {
 

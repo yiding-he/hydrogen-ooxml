@@ -106,4 +106,13 @@ public class PartUriHelper {
             return String.valueOf(count);
         }
     }
+
+    public void reserveUri(String contentType, URI partUri) {
+        getNextSequenceNumber(contentType);
+        addToReserveUri(PackUriHelper.validatePartUri(partUri).getUri());
+    }
+
+    private void addToReserveUri(URI uri) {
+        this.reservedUri.put(uri, 0);
+    }
 }

@@ -318,7 +318,7 @@ public abstract class OpenXmlPartContainer {
 
     protected void loadReferencedPartsAndRelationships(
         OpenXmlPackage openXmlPackage, OpenXmlPart sourcePart,
-        PackageRelationshipPropertyCollection relationshipCollection, Map<URI, OpenXmlPart> loadedParts
+        RelationshipCollection relationshipCollection, Map<URI, OpenXmlPart> loadedParts
     ) {
         for (RelationshipProperty rel : relationshipCollection) {
             if (rel.getRelationshipType().equals(HyperlinkRelationship.RELATIONSHIP_TYPE_CONST)) {
@@ -333,6 +333,7 @@ public abstract class OpenXmlPartContainer {
                     if (!rel.getTargetUri().toString().equalsIgnoreCase("NULL")) {
                         URI sourceUri = sourcePart == null ? URI.create("/") : sourcePart.getUri();
                         URI targetUri = PackUriHelper.resolvePartUri(sourceUri, rel.getTargetUri());
+                        log.debug("Loading relationship from {} to {}", sourceUri, targetUri);
 
                         if (loadedParts.containsKey(targetUri)) {
                             OpenXmlPart child = loadedParts.get(targetUri);
