@@ -4,8 +4,10 @@ import com.hyd.ms.io.Stream;
 import com.hyd.ooxml.framework.metadata.OpenXmlAttribute;
 import com.hyd.ooxml.packaging.OpenXmlPart;
 import com.hyd.utilities.assertion.Assert;
+import com.hyd.xml.Xml;
 import com.hyd.xml.XmlBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.w3c.dom.Document;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -15,6 +17,8 @@ import java.util.Set;
 public abstract class OpenXmlPartRootElement extends OpenXmlCompositeElement {
 
     protected OpenXmlPart openXmlPart;
+
+    protected Document parsedContent;
 
     public void save() {
         Assert.notNull(openXmlPart, "openXmlPart@" + getClass().getSimpleName());
@@ -69,5 +73,12 @@ public abstract class OpenXmlPartRootElement extends OpenXmlCompositeElement {
 
     public void setOpenXmlPart(OpenXmlPart openXmlPart) {
         this.openXmlPart = openXmlPart;
+    }
+
+    public void loadFromPart(OpenXmlPart openXmlPart, Stream stream) {
+        // TODO implement com.hyd.ooxml.OpenXmlPartRootElement.loadFromPart()
+        // It is way too much of a burden to write building process for every XML element by myself.
+        // So this is it, and I will use DOM instead.
+        this.parsedContent = Xml.parseDocumentAndClose(stream.read());
     }
 }
