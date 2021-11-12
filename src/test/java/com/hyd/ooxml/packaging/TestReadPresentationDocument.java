@@ -5,6 +5,7 @@ import com.hyd.ooxml.generated.packaging.PresentationPart;
 import com.hyd.ooxml.generated.packaging.SlidePart;
 import com.hyd.utilities.Uris;
 import com.hyd.xml.Xml;
+import com.hyd.xml.XmlDocument;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,6 @@ import java.util.*;
 class TestReadPresentationDocument {
 
     public static final String PATH = "src/test/resources/simple-create-by-ms-office.pptx";
-    // public static final String PATH = "F:\\Projects\\ZnXunzhi\\ajia-base\\xz-ooxml\\samples\\multi-pages.pptx";
 
     @Test
     public void testListAllParts() {
@@ -43,6 +43,21 @@ class TestReadPresentationDocument {
                 IOUtils.copy(packagePart.getStream().read(), Files.newOutputStream(Paths.get(outputFileName)));
                 System.out.println(outputFileName + " saved.");
             }
+        }
+    }
+
+    @Test
+    public void testFindSlideTextContent() throws Exception {
+        PresentationDocument ppt = PresentationDocument.open(PATH);
+        PresentationPart root = (PresentationPart) ppt.getRootPart();
+
+        for (SlidePart slidePart : root.getPartsOfType(SlidePart.class)) {
+            System.out.println("////////////////////////// " + slidePart.getUri());
+            XmlDocument doc = slidePart.getXmlDocument();
+            doc.lookupElements("//p:sp//p:txBody").forEach(element -> {
+                String text = doc.lookupElements("a:p/a:r/a:t", element).iterator().next().getText();
+                System.out.println(text);
+            });
         }
     }
 

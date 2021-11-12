@@ -7,6 +7,7 @@ import com.hyd.ms.io.packaging.TargetMode;
 import com.hyd.ooxml.ApplicationType;
 import com.hyd.ooxml.OpenXmlPartRootElement;
 import com.hyd.utilities.assertion.Assert;
+import com.hyd.xml.XmlDocument;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
@@ -69,6 +70,10 @@ public abstract class OpenXmlPart extends OpenXmlPartContainer {
 
     public Document getContent() {
         return getPartRootElement().getContent();
+    }
+
+    public XmlDocument getXmlDocument() {
+        return XmlDocument.fromDocument(getContent());
     }
 
     public String getContentType() {

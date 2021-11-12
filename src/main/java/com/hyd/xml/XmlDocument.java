@@ -26,6 +26,10 @@ public class XmlDocument {
         return new XmlDocument(Xml.parseDocumentAndClose(stream.read()));
     }
 
+    public static XmlDocument fromDocument(Document document) {
+        return new XmlDocument(document);
+    }
+
     //////////////////////////
 
     private final Document document;

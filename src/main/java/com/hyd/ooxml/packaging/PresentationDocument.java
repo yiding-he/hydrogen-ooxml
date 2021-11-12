@@ -74,6 +74,10 @@ public class PresentationDocument extends OpenXmlPackage {
         }
     }
 
+    public static PresentationDocument open(String path) {
+        return open(path, false);
+    }
+
     public static PresentationDocument open(String path, boolean isEditable) {
         return open(path, isEditable, new OpenSettings());
     }
