@@ -103,7 +103,7 @@
 
   <scm>
     <url>https://git-scm.com/</url>
-    <connection>https://github.com/yiding-he/hydrogen-dao.git</connection>
+    <connection>https://github.com/yiding-he/hydrogen-ooxml.git</connection>
   </scm>
 
   <profiles>
@@ -129,6 +129,23 @@
           </snapshots>
         </repository>
       </repositories>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.2.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <id>mainland-prc-china</id>
