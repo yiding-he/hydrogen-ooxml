@@ -4,7 +4,6 @@ package com.hyd.xml;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.Node;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
@@ -14,8 +13,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class Xml {
 
@@ -66,40 +63,6 @@ public class Xml {
 
     public static String toString(Document document, boolean indent) {
         return new String(toBytes(document, indent), StandardCharsets.UTF_8);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-
-    public static List<Element> lookupElements(Document doc, String xpath) {
-        return toElementList(doc.selectNodes(xpath));
-    }
-
-    public static List<Element> lookupElements(Element element, String xpath) {
-        return toElementList( element.selectNodes(xpath));
-    }
-
-    public static List<Element> toElementList(List<Node> nodeList) {
-        return nodeList.stream().map(n -> (Element)n).collect(Collectors.toList());
-    }
-
-    public static Element firstChild(Element parent, String tagName) {
-        String xpath = tagName + "[1]";
-        List<Element> elements = lookupElements(parent, xpath);
-        return elements.isEmpty() ? null : elements.get(0);
-    }
-
-    public static void addNamespace(Element element, String prefix, String namespaceUri) {
-        element.addAttribute("xmlns:" + prefix, namespaceUri);
-    }
-
-    public static void setDefaultNamespace(Element element, String namespaceUri) {
-        element.addAttribute("xmlns", namespaceUri);
-    }
-
-    public static void setAttr(Element e, String attrName, String attrValue) {
-        if (attrValue != null) {
-            e.addAttribute(attrName, attrValue);
-        }
     }
 
     public static Element createElement(String namespace, String localName) {

@@ -10,11 +10,10 @@ public class Uris {
             return uri;
         }
 
-        int lastDot = StringUtils.lastIndexOf(uri, ".", lastSlash);
-        if (lastDot < 0) {
+        if (!uri.contains(".")) {
             return StringUtils.substring(uri, lastSlash + 1);
         } else {
-            return StringUtils.substring(uri, lastSlash + 1, lastDot);
+            return StringUtils.substringBeforeLast(StringUtils.substring(uri, lastSlash + 1), ".");
         }
     }
 

@@ -2,10 +2,9 @@ package com.hyd.ms.io.packaging;
 
 import com.hyd.ms.io.FileAccess;
 import com.hyd.utilities.assertion.Assert;
-import com.hyd.xml.Xml;
 import com.hyd.xml.XmlBuilder;
+import com.hyd.xml.XmlDocument;
 import lombok.extern.slf4j.Slf4j;
-import org.dom4j.Document;
 
 import java.net.URI;
 import java.util.TreeMap;
@@ -80,8 +79,8 @@ public class InternalRelationshipCollection {
             "This method should only be called when FileAccess is Read or ReadWrite"
         );
 
-        Document doc = Xml.parseDocumentAndClose(relationshipPart.getStream().read());
-        Xml.lookupElements(doc.getRootElement(), "*[local-name()='Relationship']").forEach(rel -> {
+        XmlDocument doc = XmlDocument.fromStream(relationshipPart.getStream());
+        doc.lookupElements("//_:Relationship").forEach(rel -> {
             final String id = rel.attributeValue("Id");
             final String type = rel.attributeValue("Type");
             final String target = rel.attributeValue("Target");

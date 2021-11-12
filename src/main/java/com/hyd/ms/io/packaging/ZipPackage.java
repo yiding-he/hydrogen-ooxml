@@ -10,6 +10,7 @@ import com.hyd.ms.io.compression.ZipArchiveMode;
 import com.hyd.utilities.Uris;
 import com.hyd.utilities.assertion.Assert;
 import com.hyd.xml.Xml;
+import com.hyd.xml.XmlDocument;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -233,11 +234,11 @@ public class ZipPackage extends Package {
 
         private void parseContentTypeFile(ZipArchiveEntry contentTypeEntry) {
             String xml = new String(contentTypeEntry.getContent(), StandardCharsets.UTF_8);
-            Document doc = Xml.parseString(xml);
-            Xml.lookupElements(doc, "/*[local-name()='Types']/*[local-name()='Default']").forEach(def -> {
+            XmlDocument doc = XmlDocument.fromXmlString(xml);
+            doc.lookupElements("/_:Types/_:Default").forEach(def -> {
                 addDefaultElement(def.attributeValue("Extension"), new ContentType(def.attributeValue("ContentType")));
             });
-            Xml.lookupElements(doc, "/*[local-name()='Types']/*[local-name()='Override']").forEach(override ->
+            doc.lookupElements("/_:Types/_:Override").forEach(override ->
                 addOverrideElement(
                     PackUriHelper.validatePartUri(override.attributeValue("PartName")),
                     new ContentType(override.attributeValue("ContentType"))

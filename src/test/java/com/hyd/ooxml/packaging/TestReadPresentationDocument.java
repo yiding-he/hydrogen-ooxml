@@ -1,8 +1,11 @@
 package com.hyd.ooxml.packaging;
 
+import com.hyd.ms.io.packaging.PackagePart;
 import com.hyd.ooxml.generated.packaging.PresentationPart;
 import com.hyd.ooxml.generated.packaging.SlidePart;
+import com.hyd.utilities.Uris;
 import com.hyd.xml.Xml;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -20,9 +23,27 @@ class TestReadPresentationDocument {
 
         System.out.println("///////////////////////////////////////////////////////////////////");
         for (OpenXmlPart part : presentationDocument.getAllParts()) {
-            System.out.println(part.getUri() + " => " + part.getClass().getSimpleName());
+            System.out.println(part.getUri() + " => " +
+                part.getClass().getSimpleName() + " => " +
+                part.getPackagePart().getContentType());
         }
         System.out.println("///////////////////////////////////////////////////////////////////");
+    }
+
+    @Test
+    public void testExportImages() throws Exception {
+        PresentationDocument doc = PresentationDocument.open(PATH, false);
+        for (OpenXmlPart part : doc.getAllParts()) {
+            PackagePart packagePart = part.getPackagePart();
+
+            if (packagePart.getContentType().startsWith("image/")) {
+                String uri = packagePart.getUri().getUri().toString();
+                String outputFileName = "target/" + Uris.getBaseName(uri) + "." + Uris.getExtension(uri);
+
+                IOUtils.copy(packagePart.getStream().read(), Files.newOutputStream(Paths.get(outputFileName)));
+                System.out.println(outputFileName + " saved.");
+            }
+        }
     }
 
     @Test
