@@ -3,7 +3,8 @@ package com.hyd.xml;
 import org.dom4j.Element;
 import org.junit.jupiter.api.Test;
 
-import java.util.function.Consumer;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class XmlDocumentTest {
 
@@ -91,14 +92,21 @@ class XmlDocumentTest {
     }
 
     @Test
-    public void testLookupElements() throws Exception {
-        XmlDocument xmlDocument = XmlDocument.fromXmlString(XML1);
-        Consumer<Element> print = element -> {
-            System.out.println(element.getQualifiedName());
-        };
+    public void testLookupAttribute() throws Exception {
+        XmlDocument xmlDocument = XmlDocument.fromXmlString(XML2);
+        String restart = xmlDocument.lookupAttributeValue("//p:timing//p:cTn/@restart").orElse("");
+        assertEquals("never", restart);
+    }
 
-        xmlDocument.lookupElements("/_:Types").forEach(print);
-        xmlDocument.lookupElements("/_:Types/_:Override").forEach(print);
-        xmlDocument.lookupElements("/_:Types/_:Default").forEach(print);
+    @Test
+    public void testLookupElements() throws Exception {
+        XmlDocument doc1 = XmlDocument.fromXmlString(XML1);
+        assertFalse(doc1.lookupElements("/_:Types").isEmpty());
+        assertFalse(doc1.lookupElements("/_:Types/_:Override").isEmpty());
+        assertFalse(doc1.lookupElements("/_:Types/_:Default").isEmpty());
+
+        XmlDocument doc2 = XmlDocument.fromXmlString(XML2);
+        assertFalse(doc2.lookupElements("//p:timing").isEmpty());
+        assertFalse(doc2.lookupElements("//a:xfrm").isEmpty());
     }
 }

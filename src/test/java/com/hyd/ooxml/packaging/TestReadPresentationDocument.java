@@ -55,8 +55,9 @@ class TestReadPresentationDocument {
             System.out.println("////////////////////////// " + slidePart.getUri());
             XmlDocument doc = slidePart.getXmlDocument();
             doc.lookupElements("//p:sp//p:txBody").forEach(element -> {
-                String text = doc.lookupElements("a:p/a:r/a:t", element).iterator().next().getText();
-                System.out.println(text);
+                doc.lookupElement(element, "a:p/a:r/a:t").ifPresent(txt -> {
+                    System.out.println(txt.getText());
+                });
             });
         }
     }
